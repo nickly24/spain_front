@@ -1,7 +1,5 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Header } from "../components/Header";
-import { Footer } from "../components/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,7 +18,7 @@ export const metadata = {
   },
   description:
     "MG Group (Marescol S.L): продажа, аренда и строительство недвижимости в Испании. Каталог объектов с фильтрами и удобной навигацией.",
-  metadataBase: new URL("http://localhost:3000"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
 };
 
 export default function RootLayout({ children }) {
@@ -29,9 +27,7 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#e8f4e8] text-slate-900`}
       >
-        <Header />
-        <main className="min-h-[calc(100svh-64px)]">{children}</main>
-        <Footer />
+        {children}
       </body>
     </html>
   );

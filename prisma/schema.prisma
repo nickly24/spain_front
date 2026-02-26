@@ -1,0 +1,432 @@
+// Prisma schema for MG Group CMS
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum ListingType {
+  sale
+  rent
+}
+
+enum PropertyStatus {
+  draft
+  published
+  archived
+}
+
+enum PostStatus {
+  draft
+  published
+  archived
+}
+
+enum NavigationLocation {
+  header
+  footer
+  topbar
+}
+
+enum Locale {
+  ru
+  en
+  es
+}
+
+enum TagSection {
+  sale
+  rent
+  construction
+}
+
+enum SocialPlatform {
+  facebook
+  instagram
+  youtube
+}
+
+model SocialLink {
+  id        Int            @id @default(autoincrement())
+  platform  SocialPlatform
+  url       String
+  sortOrder Int            @default(0)
+  visible   Boolean        @default(true)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@unique([platform])
+}
+
+model City {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  sortOrder Int      @default(0)
+  visible   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  translations CityTranslation[]
+  properties   Property[]
+}
+
+model CityTranslation {
+  id        Int      @id @default(autoincrement())
+  cityId    Int
+  locale    Locale
+  label     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  city City @relation(fields: [cityId], references: [id], onDelete: Cascade)
+
+  @@unique([cityId, locale])
+}
+
+model Property {
+  id                 Int              @id @default(autoincrement())
+  slug               String           @unique
+  listingType        ListingType
+  title              String
+  city               String
+  cityId             Int?
+  bedrooms           Int
+  areaM2             Int
+  priceEur           Int?
+  rentEurPerMonth    Int?
+  description        String
+  status             PropertyStatus   @default(draft)
+  views              Int              @default(0)
+  rating             Float            @default(0)
+  seoTitle           String?          @db.VarChar(255)
+  seoDescription     String?          @db.VarChar(512)
+  badges             Json?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  images             PropertyImage[]
+  translations       PropertyTranslation[]
+  tags               PropertyTag[]
+
+  cityRel            City?            @relation(fields: [cityId], references: [id], onDelete: SetNull)
+}
+
+model Tag {
+  id        Int        @id @default(autoincrement())
+  section   TagSection
+  key       String
+  sortOrder Int        @default(0)
+  visible   Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  translations TagTranslation[]
+  properties   PropertyTag[]
+
+  @@unique([section, key])
+}
+
+model TagTranslation {
+  id        Int      @id @default(autoincrement())
+  tagId     Int
+  locale    Locale
+  label     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tag Tag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([tagId, locale])
+}
+
+model PropertyTag {
+  propertyId Int
+  tagId      Int
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  tag      Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([propertyId, tagId])
+}
+
+model PropertyImage {
+  id         Int      @id @default(autoincrement())
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyId Int
+
+  url        String
+  alt        String?
+  sortOrder  Int      @default(0)
+  isMain     Boolean  @default(false)
+}
+
+model NewsPost {
+  id             Int        @id @default(autoincrement())
+  slug           String     @unique
+  title          String
+  excerpt        String?
+  content        String     // markdown or rich-text JSON as string
+  coverUrl       String?
+  status         PostStatus @default(draft)
+  publishedAt    DateTime?
+  seoTitle       String?    @db.VarChar(255)
+  seoDescription String?    @db.VarChar(512)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  translations   NewsPostTranslation[]
+}
+
+model ConstructionStep {
+  id        Int      @id @default(autoincrement())
+  order     Int
+  title     String
+  text      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  translations ConstructionStepTranslation[]
+}
+
+model ConstructionStepTranslation {
+  id        Int      @id @default(autoincrement())
+  stepId    Int
+  locale    Locale
+  title     String
+  text      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  step ConstructionStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
+
+  @@unique([stepId, locale])
+}
+
+model ConstructionCase {
+  id        Int      @id @default(autoincrement())
+  title     String
+  beforeUrl String
+  afterUrl  String
+  was       Json?
+  done      Json?
+  city      String?
+  budget    String?
+  duration  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  translations ConstructionCaseTranslation[]
+}
+
+model ConstructionCaseTranslation {
+  id        Int      @id @default(autoincrement())
+  caseId    Int
+  locale    Locale
+  title     String?
+  was       Json?
+  done      Json?
+  city      String?
+  budget    String?
+  duration  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  constructionCase ConstructionCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@unique([caseId, locale])
+}
+
+model ConstructionService {
+  id        Int      @id @default(autoincrement())
+  title     String
+  text      String
+  iconUrl   String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  translations ConstructionServiceTranslation[]
+}
+
+model ConstructionServiceTranslation {
+  id        Int      @id @default(autoincrement())
+  serviceId Int
+  locale    Locale
+  title     String
+  text      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  service ConstructionService @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([serviceId, locale])
+}
+
+model Contact {
+  id           Int      @id @default(autoincrement())
+  topic        String
+  name         String?
+  person       String?
+  phone        String
+  email        String?
+  address      String?
+  workingHours String?
+  type         String?
+  languages    String?  @db.VarChar(255)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  translations ContactTranslation[]
+}
+
+model ContactTranslation {
+  id           Int      @id @default(autoincrement())
+  contactId    Int
+  locale       Locale
+  topic        String?
+  name         String?
+  person       String?
+  address      String?
+  workingHours String?
+  languages    String?  @db.VarChar(255)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  contact Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@unique([contactId, locale])
+}
+
+model NavigationLink {
+  id           Int                     @id @default(autoincrement())
+  location     NavigationLocation
+  label        String
+  href         String
+  sortOrder    Int                     @default(0)
+  visible      Boolean                 @default(true)
+  createdAt    DateTime                @default(now())
+  updatedAt    DateTime                @updatedAt
+
+  translations NavigationLinkTranslation[]
+}
+
+model NavigationLinkTranslation {
+  id        Int             @id @default(autoincrement())
+  linkId    Int
+  locale    Locale
+  label     String
+  createdAt DateTime       @default(now())
+  updatedAt DateTime        @updatedAt
+
+  link NavigationLink @relation(fields: [linkId], references: [id], onDelete: Cascade)
+
+  @@unique([linkId, locale])
+}
+
+model Page {
+  id             Int      @id @default(autoincrement())
+  slug           String   @unique
+  title          String
+  content        String?
+  seoTitle       String?  @db.VarChar(255)
+  seoDescription String?  @db.VarChar(512)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  translations   PageTranslation[]
+}
+
+model PageTranslation {
+  id             Int      @id @default(autoincrement())
+  pageId         Int
+  locale         Locale
+  title          String
+  seoTitle       String?  @db.VarChar(255)
+  seoDescription String?  @db.VarChar(512)
+
+  page Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@unique([pageId, locale])
+}
+
+model PropertyTranslation {
+  id             Int      @id @default(autoincrement())
+  propertyId     Int
+  locale         Locale
+  title          String
+  description    String
+  seoTitle       String?  @db.VarChar(255)
+  seoDescription String?  @db.VarChar(512)
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([propertyId, locale])
+}
+
+model NewsPostTranslation {
+  id             Int      @id @default(autoincrement())
+  postId         Int
+  locale         Locale
+  title          String
+  excerpt        String?
+  content        String
+  seoTitle       String?  @db.VarChar(255)
+  seoDescription String?  @db.VarChar(512)
+
+  post NewsPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, locale])
+}
+
+model PageContent {
+  id        Int      @id @default(autoincrement())
+  pageSlug  String
+  key       String
+  value     String   @db.Text
+  locale    Locale   @default(ru)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([pageSlug, key, locale])
+}
+
+model HeroBanner {
+  id        Int      @id @default(autoincrement())
+  pageSlug  String
+  imageUrl  String
+  title     String?
+  subtitle  String?
+  ctaText   String?
+  ctaHref   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AdminUser {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  role         String   @default("admin")
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Partner {
+  id        Int      @id @default(autoincrement())
+  name      String?
+  logoUrl   String
+  href      String?
+  sortOrder Int      @default(0)
+  visible   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+

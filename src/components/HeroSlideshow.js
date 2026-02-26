@@ -32,21 +32,41 @@ const SLIDES = [
 const INTERVAL_MS = 7500;
 const TEL_HREF = "tel:+34865450175";
 
-export function HeroSlideshow() {
+export function HeroSlideshow({ content = {} }) {
   const [index, setIndex] = useState(0);
+
+  const slideContent = SLIDES.map((s) => {
+    const labelKey = `home.hero.${s.id}.label`;
+    const subtitleKey = `home.hero.${s.id}.subtitle`;
+    return {
+      ...s,
+      label: content[labelKey] || s.label,
+      subtitle: content[subtitleKey] || s.subtitle,
+    };
+  });
+
+  const activeSlide = slideContent[index] || slideContent[0] || SLIDES[0];
+
+  const titleLine1 =
+    content["home.hero.title.line1"] || "Недвижимость в Испании";
+  const titleLine2 =
+    content["home.hero.title.line2"] || "с подбором под ваш запрос";
+
+  const mainCta = content["home.hero.mainCta"] || "Перейти в раздел";
+  const callCta = content["home.hero.callCta"] || "Позвонить";
 
   useEffect(() => {
     const t = setInterval(() => {
-      setIndex((prev) => (prev + 1) % SLIDES.length);
+      setIndex((prev) => (prev + 1) % slideContent.length);
     }, INTERVAL_MS);
     return () => clearInterval(t);
-  }, []);
+  }, [slideContent.length]);
 
   return (
     <section className="relative overflow-hidden">
       <div className="absolute inset-0">
         <Image
-          src="/photos/poster.png"
+          src="/photos/poster.jpg"
           alt="MG Group — недвижимость в Испании"
           fill
           priority
@@ -55,9 +75,9 @@ export function HeroSlideshow() {
         <div className="absolute inset-0 bg-linear-to-b from-black/70 via-black/55 to-[#07090c]" />
       </div>
 
-      {/* Три точки справа, по вертикали по центру (сверху вниз) */}
-      <div className="absolute right-6 top-1/2 z-10 flex -translate-y-1/2 flex-col items-center gap-1.5 lg:right-10">
-        {SLIDES.map((s, i) => (
+      {/* Три точки справа (как было) — только на десктопе */}
+      <div className="hidden lg:flex absolute right-10 top-1/2 z-10 -translate-y-1/2 flex-col items-center gap-1.5">
+        {slideContent.map((s, i) => (
           <button
             key={s.id}
             type="button"
@@ -78,8 +98,8 @@ export function HeroSlideshow() {
       <Container className="relative py-16 sm:py-20 lg:py-28">
         <div className="max-w-3xl">
             {/* Плашка: Продажа • Аренда • Строительство — активный зелёным */}
-            <div className="inline-flex flex-wrap items-center gap-x-2 gap-y-1 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs text-white/80">
-              {SLIDES.map((s, i) => (
+            <div className="inline-flex items-center gap-x-1.5 gap-y-1 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[10px] text-white/80 sm:px-4 sm:py-2 sm:text-xs whitespace-nowrap">
+              {slideContent.map((s, i) => (
                 <span key={s.id} className="inline-flex items-center gap-1.5">
                   {i > 0 && <span className="text-white/50">•</span>}
                   <span
@@ -98,14 +118,18 @@ export function HeroSlideshow() {
             </div>
 
             <h1 className="mt-5 text-4xl font-semibold tracking-tight text-white sm:text-5xl lg:text-6xl">
-              Недвижимость в Испании
-              <br className="hidden sm:block" />
-              с подбором под ваш запрос
+              {titleLine1}{" "}
+              <span className="block sm:inline">{titleLine2}</span>
             </h1>
 
-            {/* Текст слайда — плавное исчезновение предыдущего и появление следующего */}
-            <div className="relative mt-5 min-h-[4.5rem] sm:min-h-20">
-              {SLIDES.map((s, i) => (
+            {/* Текст слайда: на мобиле без абсолютов (чтобы не налезало на кнопки) */}
+            <p className="mt-5 max-w-2xl text-base leading-7 text-white/80 sm:hidden">
+              {activeSlide.subtitle}
+            </p>
+
+            {/* Десктоп/планшет: плавное исчезновение предыдущего и появление следующего */}
+            <div className="relative mt-5 hidden sm:block min-h-20">
+              {slideContent.map((s, i) => (
                 <p
                   key={s.id}
                   className="absolute inset-0 max-w-2xl text-base leading-7 text-white/80 sm:text-lg transition-[opacity,transform] duration-1000 ease-in-out"
@@ -123,17 +147,37 @@ export function HeroSlideshow() {
             {/* Две кнопки для любого раздела: Перейти в раздел + Позвонить */}
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Link
-                href={SLIDES[index].sectionHref}
+                href={activeSlide.sectionHref}
                 className="inline-flex items-center justify-center rounded-full bg-[#ff6a3d] px-6 py-3 text-sm font-semibold text-white hover:bg-[#ff5a2b]"
               >
-                Перейти в раздел
+                {mainCta}
               </Link>
               <a
                 href={TEL_HREF}
                 className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/5 px-6 py-3 text-sm font-semibold text-white hover:bg-white/10"
               >
-                Позвонить
+                {callCta}
               </a>
+            </div>
+
+            {/* Точки снизу (мобилка): под кнопками, в самом низу */}
+            <div className="mt-6 flex justify-center gap-2 lg:hidden">
+              {slideContent.map((s, i) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => setIndex(i)}
+                  className="rounded-full p-1.5 transition-opacity hover:opacity-80"
+                  aria-label={`Слайд: ${s.label}`}
+                  aria-current={i === index ? "true" : undefined}
+                >
+                  <span
+                    className={`block h-2 w-2 rounded-full transition-colors ${
+                      i === index ? "bg-[#7DC931]" : "bg-white/50"
+                    }`}
+                  />
+                </button>
+              ))}
             </div>
           </div>
       </Container>

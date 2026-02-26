@@ -3,7 +3,53 @@
 import Image from "next/image";
 import { useMemo, useState } from "react";
 
-export function BeforeAfterGallery({ cases }) {
+export function BeforeAfterGallery({ cases, lang = "ru" }) {
+  const T = {
+    ru: {
+      label: "Кейсы",
+      title: "Примеры работ «до/после»",
+      text: "Один кейс на экране: слева «до», справа «после». Ниже — что было и что сделали. Переключайте стрелками.",
+      before: "До",
+      after: "После",
+      was: "Что было",
+      done: "Что сделали",
+      prev: "Предыдущий пример",
+      next: "Следующий пример",
+      openExample: (n) => `Открыть пример ${n}`,
+      beforeAlt: (title) => `${title} — до`,
+      afterAlt: (title) => `${title} — после`,
+    },
+    en: {
+      label: "Cases",
+      title: "Before/after examples",
+      text: "One case per screen: “before” on the left, “after” on the right. Below — what it was and what we did. Use arrows to switch.",
+      before: "Before",
+      after: "After",
+      was: "Before",
+      done: "After",
+      prev: "Previous example",
+      next: "Next example",
+      openExample: (n) => `Open example ${n}`,
+      beforeAlt: (title) => `${title} — before`,
+      afterAlt: (title) => `${title} — after`,
+    },
+    es: {
+      label: "Casos",
+      title: "Ejemplos antes/después",
+      text: "Un caso por pantalla: “antes” a la izquierda y “después” a la derecha. Abajo — qué había y qué hicimos. Cambia con las flechas.",
+      before: "Antes",
+      after: "Después",
+      was: "Antes",
+      done: "Después",
+      prev: "Ejemplo anterior",
+      next: "Siguiente ejemplo",
+      openExample: (n) => `Abrir ejemplo ${n}`,
+      beforeAlt: (title) => `${title} — antes`,
+      afterAlt: (title) => `${title} — después`,
+    },
+  };
+  const t = T[lang] || T.ru;
+
   const safeCases = useMemo(
     () => (Array.isArray(cases) && cases.length ? cases : []),
     [cases]
@@ -21,14 +67,13 @@ export function BeforeAfterGallery({ cases }) {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Кейсы
+            {t.label}
           </div>
           <h2 className="mt-2 text-xl font-semibold tracking-tight text-slate-900">
-            Примеры работ «до/после»
+            {t.title}
           </h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            Один кейс на экране: слева «до», справа «после». Ниже — что было и что
-            сделали. Переключайте стрелками.
+            {t.text}
           </p>
         </div>
       </div>
@@ -44,12 +89,12 @@ export function BeforeAfterGallery({ cases }) {
         <div className="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-2">
           <div className="relative overflow-hidden rounded-3xl border border-black/10 bg-slate-50">
             <div className="absolute left-4 top-4 z-10 rounded-full bg-black/60 px-3 py-1 text-xs font-semibold text-white">
-              До
+              {t.before}
             </div>
             <div className="relative aspect-16/10">
               <Image
                 src={c.beforeSrc}
-                alt={`${c.title} — до`}
+                alt={t.beforeAlt(c.title)}
                 fill
                 className="object-cover"
                 sizes="(min-width: 1024px) 520px, 100vw"
@@ -59,12 +104,12 @@ export function BeforeAfterGallery({ cases }) {
 
           <div className="relative overflow-hidden rounded-3xl border border-black/10 bg-slate-50">
             <div className="absolute left-4 top-4 z-10 rounded-full bg-[#ff6a3d] px-3 py-1 text-xs font-semibold text-white">
-              После
+              {t.after}
             </div>
             <div className="relative aspect-16/10">
               <Image
                 src={c.afterSrc}
-                alt={`${c.title} — после`}
+                alt={t.afterAlt(c.title)}
                 fill
                 className="object-cover"
                 sizes="(min-width: 1024px) 520px, 100vw"
@@ -76,7 +121,7 @@ export function BeforeAfterGallery({ cases }) {
         <div className="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-2">
           <div className="rounded-3xl bg-slate-50 p-5">
             <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Что было
+              {t.was}
             </div>
             <ul className="mt-3 list-disc space-y-1.5 pl-5 text-sm leading-6 text-slate-700">
               {c.was.map((t) => (
@@ -87,7 +132,7 @@ export function BeforeAfterGallery({ cases }) {
 
           <div className="rounded-3xl bg-slate-50 p-5">
             <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Что сделали
+              {t.done}
             </div>
             <ul className="mt-3 list-disc space-y-1.5 pl-5 text-sm leading-6 text-slate-700">
               {c.done.map((t) => (
@@ -103,7 +148,7 @@ export function BeforeAfterGallery({ cases }) {
             onClick={() => canPrev && setIdx((v) => v - 1)}
             disabled={!canPrev}
             className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-black/10 bg-white text-slate-900 shadow-sm hover:bg-slate-50 disabled:opacity-40"
-            aria-label="Предыдущий пример"
+            aria-label={t.prev}
           >
             <svg viewBox="0 0 20 20" className="size-5 fill-current" aria-hidden="true">
               <path
@@ -123,7 +168,7 @@ export function BeforeAfterGallery({ cases }) {
                 className={`h-2.5 w-2.5 rounded-full transition ${
                   i === idx ? "bg-[#ff6a3d]" : "bg-slate-300 hover:bg-slate-400"
                 }`}
-                aria-label={`Открыть пример ${i + 1}`}
+                aria-label={t.openExample(i + 1)}
               />
             ))}
           </div>
@@ -133,7 +178,7 @@ export function BeforeAfterGallery({ cases }) {
             onClick={() => canNext && setIdx((v) => v + 1)}
             disabled={!canNext}
             className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-black/10 bg-white text-slate-900 shadow-sm hover:bg-slate-50 disabled:opacity-40"
-            aria-label="Следующий пример"
+            aria-label={t.next}
           >
             <svg viewBox="0 0 20 20" className="size-5 fill-current" aria-hidden="true">
               <path

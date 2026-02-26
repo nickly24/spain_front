@@ -37,21 +37,58 @@ function Chart() {
   );
 }
 
-export function CompanyNumbers() {
-  const stats = [
-    { big: "37 млн м²", small: "жилья введено в эксплуатацию (пример)" },
-    { big: "650 тыс.", small: "клиентов/жителей (пример)" },
-    { big: "170+ объектов", small: "в портфеле проектов (пример)" },
-    { big: "30+ специалистов", small: "в команде и партнёрской сети (пример)" },
-  ];
+export function CompanyNumbers({ lang = "ru" }) {
+  const T = {
+    ru: {
+      label: "MG Group в цифрах",
+      title: "Показатели и масштаб",
+      growthTitle: "Рост проектов",
+      growthText: "Визуальная заглушка под реальную статистику.",
+      note: "Цифры и подписи уточним после согласования.",
+      stats: [
+        { big: "37 млн м²", small: "жилья введено в эксплуатацию (пример)" },
+        { big: "650 тыс.", small: "клиентов/жителей (пример)" },
+        { big: "170+ объектов", small: "в портфеле проектов (пример)" },
+        { big: "30+ специалистов", small: "в команде и партнёрской сети (пример)" },
+      ],
+    },
+    en: {
+      label: "MG Group in numbers",
+      title: "Key metrics",
+      growthTitle: "Project growth",
+      growthText: "Placeholder for real statistics.",
+      note: "Numbers and captions will be finalized after approval.",
+      stats: [
+        { big: "37M m²", small: "commissioned housing (example)" },
+        { big: "650K", small: "clients/residents (example)" },
+        { big: "170+ listings", small: "in project portfolio (example)" },
+        { big: "30+ specialists", small: "team and partner network (example)" },
+      ],
+    },
+    es: {
+      label: "MG Group en cifras",
+      title: "Indicadores",
+      growthTitle: "Crecimiento de proyectos",
+      growthText: "Marcador de posición para estadísticas reales.",
+      note: "Las cifras y los textos se concretarán tras la aprobación.",
+      stats: [
+        { big: "37M m²", small: "vivienda puesta en servicio (ejemplo)" },
+        { big: "650K", small: "clientes/residentes (ejemplo)" },
+        { big: "170+ inmuebles", small: "en la cartera (ejemplo)" },
+        { big: "30+ especialistas", small: "equipo y red de socios (ejemplo)" },
+      ],
+    },
+  };
+  const t = T[lang] || T.ru;
+  const stats = t.stats;
 
   return (
     <section className="rounded-3xl border border-black/10 bg-white p-7 shadow-sm">
       <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-        MG Group в цифрах
+        {t.label}
       </div>
       <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900">
-        Показатели и масштаб
+        {t.title}
       </h2>
 
       <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-12">
@@ -60,9 +97,9 @@ export function CompanyNumbers() {
           className="relative overflow-hidden rounded-3xl p-6 text-white lg:col-span-5"
           style={{ backgroundColor: BRAND }}
         >
-          <div className="text-lg font-semibold">Рост проектов</div>
+          <div className="text-lg font-semibold">{t.growthTitle}</div>
           <div className="mt-1 text-sm text-white/85">
-            Визуальная заглушка под реальную статистику.
+            {t.growthText}
           </div>
 
           <div className="mt-6 aspect-4/3 w-full">
@@ -75,7 +112,7 @@ export function CompanyNumbers() {
             <span>150</span>
           </div>
           <div className="mt-3 text-xs text-white/80">
-            Цифры и подписи уточним после согласования.
+            {t.note}
           </div>
         </div>
 

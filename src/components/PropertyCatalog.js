@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { PropertyCard } from "./PropertyCard";
+import { getIntlLocale, getUi, formatInt } from "../lib/ui";
 
 function clampNumber(value, { min, max }) {
   if (Number.isNaN(value)) return value;
@@ -16,24 +17,34 @@ function toNumberOrNull(v) {
   return Number.isFinite(n) ? n : null;
 }
 
-function formatThousands(valueDigits) {
+function formatThousands(valueDigits, lang) {
   if (!valueDigits) return "";
   const n = Number(valueDigits);
   if (!Number.isFinite(n)) return "";
-  return new Intl.NumberFormat("ru-RU").format(n);
+  return formatInt(n, lang);
 }
 
 function digitsOnly(s) {
   return String(s || "").replace(/[^\d]/g, "");
 }
 
-export function PropertyCatalog({ properties, mode }) {
+export function PropertyCatalog({ properties, mode, basePath = "", lang = "ru" }) {
   const PAGE_SIZE = 6;
+  const ui = getUi(lang);
 
   const cities = useMemo(() => {
-    const set = new Set(properties.map((p) => p.city).filter(Boolean));
-    return Array.from(set).sort((a, b) => a.localeCompare(b, "ru"));
-  }, [properties]);
+    const seen = new Map();
+    for (const p of properties) {
+      const key = p.cityKey || p.city || "";
+      const label = p.cityLabel || p.city || "";
+      if (!key || !label) continue;
+      if (!seen.has(key)) seen.set(key, label);
+    }
+    const locale = getIntlLocale(lang);
+    return Array.from(seen.entries())
+      .map(([key, label]) => ({ key, label }))
+      .sort((a, b) => a.label.localeCompare(b.label, locale));
+  }, [properties, lang]);
 
   const priceKey = mode === "sale" ? "priceEur" : "rentEurPerMonth";
   const priceValues = useMemo(
@@ -44,7 +55,7 @@ export function PropertyCatalog({ properties, mode }) {
   const priceMinDefault = Math.min(...priceValues);
   const priceMaxDefault = Math.max(...priceValues);
 
-  const [city, setCity] = useState("");
+  const [cityKey, setCityKey] = useState("");
   const [bedrooms, setBedrooms] = useState("");
   const [minPriceRaw, setMinPriceRaw] = useState(String(priceMinDefault));
   const [maxPriceRaw, setMaxPriceRaw] = useState(String(priceMaxDefault));
@@ -55,7 +66,7 @@ export function PropertyCatalog({ properties, mode }) {
     const bed = toNumberOrNull(bedrooms);
 
     return properties.filter((p) => {
-      if (city && p.city !== city) return false;
+      if (cityKey && (p.cityKey || p.city) !== cityKey) return false;
 
       if (bed !== null) {
         // 4+ спальни — считаем как >=4
@@ -74,14 +85,9 @@ export function PropertyCatalog({ properties, mode }) {
 
       return true;
     });
-  }, [properties, city, bedrooms, minPriceRaw, maxPriceRaw, priceKey]);
+  }, [properties, cityKey, bedrooms, minPriceRaw, maxPriceRaw, priceKey]);
 
   const [page, setPage] = useState(1);
-
-  // При смене фильтров возвращаемся на первую страницу
-  useEffect(() => {
-    setPage(1);
-  }, [city, bedrooms, minPriceRaw, maxPriceRaw]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
@@ -90,7 +96,7 @@ export function PropertyCatalog({ properties, mode }) {
     return filtered.slice(start, start + PAGE_SIZE);
   }, [filtered, currentPage]);
 
-  const unit = mode === "sale" ? "€" : "€ / мес";
+  const unit = mode === "sale" ? "€" : `€ ${ui.catalog.rentSuffix}`;
 
   return (
     <div className="space-y-6">
@@ -98,17 +104,20 @@ export function PropertyCatalog({ properties, mode }) {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div className="grid min-w-0 flex-1 grid-cols-1 gap-3 sm:grid-cols-3">
             <label className="block">
-              <div className="text-xs text-slate-600">Город</div>
+              <div className="text-xs text-slate-600">{ui.catalog.city}</div>
               <div className="relative mt-1">
                 <select
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
+                  value={cityKey}
+                  onChange={(e) => {
+                    setCityKey(e.target.value);
+                    setPage(1);
+                  }}
                   className="w-full appearance-none rounded-xl border border-slate-200 bg-white px-3 py-2 pr-8 text-sm text-slate-900 outline-none focus:border-[#ff6a3d]"
                 >
-                  <option value="">Все города</option>
+                  <option value="">{ui.catalog.allCities}</option>
                   {cities.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
+                    <option key={c.key} value={c.key}>
+                      {c.label}
                     </option>
                   ))}
                 </select>
@@ -128,15 +137,18 @@ export function PropertyCatalog({ properties, mode }) {
             </label>
 
             <label className="block">
-              <div className="text-xs text-slate-600">Кол-во спален</div>
+              <div className="text-xs text-slate-600">{ui.catalog.bedrooms}</div>
               <div className="relative mt-1">
                 <select
                   value={bedrooms}
-                  onChange={(e) => setBedrooms(e.target.value)}
+                  onChange={(e) => {
+                    setBedrooms(e.target.value);
+                    setPage(1);
+                  }}
                   className="w-full appearance-none rounded-xl border border-slate-200 bg-white px-3 py-2 pr-8 text-sm text-slate-900 outline-none focus:border-[#ff6a3d]"
                 >
-                  <option value="">Любое</option>
-                  <option value="0">Студия</option>
+                  <option value="">{ui.catalog.any}</option>
+                  <option value="0">{ui.catalog.studio}</option>
                   <option value="1">1</option>
                   <option value="2">2</option>
                   <option value="3">3</option>
@@ -158,13 +170,18 @@ export function PropertyCatalog({ properties, mode }) {
             </label>
 
             <label className="block">
-              <div className="text-xs text-slate-600">Стоимость ({unit})</div>
+              <div className="text-xs text-slate-600">
+                {ui.catalog.price} ({unit})
+              </div>
               <div className="mt-1 grid grid-cols-2 gap-2">
                 <div className="relative">
                   <input
                     inputMode="numeric"
-                    value={formatThousands(minPriceRaw)}
-                    onChange={(e) => setMinPriceRaw(digitsOnly(e.target.value))}
+                    value={formatThousands(minPriceRaw, lang)}
+                    onChange={(e) => {
+                      setMinPriceRaw(digitsOnly(e.target.value));
+                      setPage(1);
+                    }}
                     onBlur={() => {
                       const n = toNumberOrNull(minPriceRaw);
                       if (n === null) return;
@@ -176,9 +193,10 @@ export function PropertyCatalog({ properties, mode }) {
                           })
                         )
                       );
+                      setPage(1);
                     }}
                     className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 pr-8 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-[#ff6a3d]"
-                    placeholder="от"
+                    placeholder={ui.catalog.from}
                   />
                   <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-500">
                     €
@@ -187,8 +205,11 @@ export function PropertyCatalog({ properties, mode }) {
                 <div className="relative">
                   <input
                     inputMode="numeric"
-                    value={formatThousands(maxPriceRaw)}
-                    onChange={(e) => setMaxPriceRaw(digitsOnly(e.target.value))}
+                    value={formatThousands(maxPriceRaw, lang)}
+                    onChange={(e) => {
+                      setMaxPriceRaw(digitsOnly(e.target.value));
+                      setPage(1);
+                    }}
                     onBlur={() => {
                       const n = toNumberOrNull(maxPriceRaw);
                       if (n === null) return;
@@ -200,9 +221,10 @@ export function PropertyCatalog({ properties, mode }) {
                           })
                         )
                       );
+                      setPage(1);
                     }}
                     className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 pr-8 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-[#ff6a3d]"
-                    placeholder="до"
+                    placeholder={ui.catalog.to}
                   />
                   <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-500">
                     €
@@ -214,28 +236,29 @@ export function PropertyCatalog({ properties, mode }) {
           <button
             type="button"
             onClick={() => {
-              setCity("");
+              setCityKey("");
               setBedrooms("");
               setMinPriceRaw(String(priceMinDefault));
               setMaxPriceRaw(String(priceMaxDefault));
+              setPage(1);
             }}
             className="shrink-0 rounded-full border border-black/10 bg-black/3 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-black/5 sm:ml-2"
           >
-            Сбросить
+            {ui.catalog.reset}
           </button>
         </div>
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <span className="text-sm text-slate-600">
-          Найдено{" "}
+          {ui.catalog.found}{" "}
           <span className="font-semibold text-[#ff6a3d]">{filtered.length}</span>
         </span>
         {totalPages > 1 && (
           <span className="text-sm text-slate-600">
-            Страница{" "}
+            {ui.catalog.page}{" "}
             <span className="font-semibold text-slate-900">{currentPage}</span>
-            {" из "}
+            {` ${ui.catalog.of} `}
             <span className="font-semibold text-slate-900">{totalPages}</span>
           </span>
         )}
@@ -243,7 +266,7 @@ export function PropertyCatalog({ properties, mode }) {
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {paginated.map((p) => (
-          <PropertyCard key={p.id} property={p} />
+          <PropertyCard key={p.id} property={p} basePath={basePath} lang={lang} />
         ))}
       </div>
 

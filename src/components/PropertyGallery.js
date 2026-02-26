@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 
 export function PropertyGallery({ images, alt }) {
   const safeImages = useMemo(
-    () => (Array.isArray(images) && images.length ? images : ["/photos/poster.png"]),
+    () => (Array.isArray(images) && images.length ? images : ["/photos/poster.jpg"]),
     [images]
   );
   const [idx, setIdx] = useState(0);

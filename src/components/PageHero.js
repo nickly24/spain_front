@@ -5,7 +5,7 @@ export function PageHero({
   title,
   subtitle,
   crumbs,
-  imageSrc = "/photos/poster.png",
+  imageSrc = "/photos/poster.jpg",
 }) {
   return (
     <section className="relative overflow-hidden border-b border-black/10">
