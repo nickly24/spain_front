@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { Container } from "./Container";
@@ -198,7 +197,7 @@ function LanguagePicker({ pathname, lang, onOpenChange }) {
           role="menu"
         >
           {LOCALES.map((l) => (
-            <Link
+            <a
               key={l}
               href={pathForLocale(pathname, l)}
               onClick={() => setOpenSafe(false)}
@@ -210,7 +209,7 @@ function LanguagePicker({ pathname, lang, onOpenChange }) {
               <Flag locale={l} />
               <span className="flex-1">{LOCALE_NAMES[l] || l.toUpperCase()}</span>
               {l === lang ? <span className="text-[#7DC931]">●</span> : <span className="text-slate-300">○</span>}
-            </Link>
+            </a>
           ))}
         </div>
       )}
@@ -301,17 +300,17 @@ function HeaderInner({ pathname, lang = "ru", headerLinks = [], topbarLinks = []
               })}
               <span className="ml-2 h-4 w-px bg-black/10" />
               {topbar.slice(0, 2).map((l) => (
-                <Link key={l.href} className="text-slate-600 hover:text-slate-900" href={l.href}>
+                <a key={l.href} className="text-slate-600 hover:text-slate-900" href={l.href}>
                   {l.label}
-                </Link>
+                </a>
               ))}
             </div>
             <div className="flex items-center gap-3">
               <span className="ml-2 h-4 w-px bg-black/10" />
               {topbar.slice(2).map((l) => (
-                <Link key={l.href} className="text-slate-600 hover:text-slate-900" href={l.href}>
+                <a key={l.href} className="text-slate-600 hover:text-slate-900" href={l.href}>
                   {l.label}
-                </Link>
+                </a>
               ))}
               <LanguagePicker pathname={pathname} lang={lang} onOpenChange={setLangMenuOpen} />
             </div>
@@ -322,7 +321,7 @@ function HeaderInner({ pathname, lang = "ru", headerLinks = [], topbarLinks = []
       {/* Main bar */}
       <Container className="py-3">
         <div className="flex items-center justify-between gap-4">
-          <Link href={homeHref} className="flex items-center shrink-0">
+          <a href={homeHref} className="flex items-center shrink-0">
             <Image
               src="/logo.svg"
               alt="MG Group"
@@ -331,17 +330,17 @@ function HeaderInner({ pathname, lang = "ru", headerLinks = [], topbarLinks = []
               className="h-10 w-auto"
               priority
             />
-          </Link>
+          </a>
 
           <nav className="hidden lg:flex items-center gap-1">
             {navLinks.map((l) => (
-              <Link
+              <a
                 key={l.href}
                 href={l.href}
                 className="rounded-full px-4 py-2 text-base font-semibold text-slate-600 hover:text-slate-900 hover:bg-black/3"
               >
                 {l.label}
-              </Link>
+              </a>
             ))}
           </nav>
 
@@ -392,7 +391,7 @@ function HeaderInner({ pathname, lang = "ru", headerLinks = [], topbarLinks = []
             <div className="flex flex-col gap-0.5">
               <div className="mb-3 flex flex-wrap items-center gap-2 px-4">
                 {LOCALES.map((l) => (
-                  <Link
+                  <a
                     key={l}
                     href={pathForLocale(pathname, l)}
                     onClick={() => setOpen(false)}
@@ -406,18 +405,18 @@ function HeaderInner({ pathname, lang = "ru", headerLinks = [], topbarLinks = []
                       <Flag locale={l} />
                     </span>
                     {LOCALE_NAMES[l] || l.toUpperCase()}
-                  </Link>
+                  </a>
                 ))}
               </div>
               {navLinks.map((l) => (
-                <Link
+                <a
                   key={l.href}
                   href={l.href}
                   className="rounded-xl px-4 py-3 text-base font-semibold text-slate-700 hover:bg-black/3"
                   onClick={() => setOpen(false)}
                 >
                   {l.label}
-                </Link>
+                </a>
               ))}
             </div>
           </Container>

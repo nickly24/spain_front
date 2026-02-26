@@ -1,4 +1,3 @@
-import Link from "next/link";
 import Image from "next/image";
 import { Container } from "./Container";
 import { getUi } from "../lib/ui";
@@ -48,7 +47,7 @@ export function Footer({ lang = "ru", footerLinks = [] }) {
       <Container className="py-12">
         <div className="grid grid-cols-1 gap-10 md:grid-cols-12">
           <div className="md:col-span-5">
-            <Link href={homeHref} className="inline-block shrink-0">
+            <a href={homeHref} className="inline-block shrink-0">
               <Image
                 src="/logo.svg"
                 alt="MG Group"
@@ -56,7 +55,7 @@ export function Footer({ lang = "ru", footerLinks = [] }) {
                 height={49}
                 className="h-9 w-auto"
               />
-            </Link>
+            </a>
 
             <p className="mt-4 max-w-md text-sm leading-6 text-slate-600">
               {ui.footer.description}
@@ -85,9 +84,9 @@ export function Footer({ lang = "ru", footerLinks = [] }) {
             <ul className="mt-4 grid grid-cols-1 gap-2">
               {links.map((l) => (
                 <li key={l.href}>
-                  <Link className="text-sm text-slate-600 hover:text-slate-900" href={l.href}>
+                  <a className="text-sm text-slate-600 hover:text-slate-900" href={l.href}>
                     {l.label}
-                  </Link>
+                  </a>
                 </li>
               ))}
             </ul>
@@ -100,12 +99,12 @@ export function Footer({ lang = "ru", footerLinks = [] }) {
             <p className="mt-4 text-sm leading-6 text-slate-600">
               {ui.footer.feedbackText}
             </p>
-            <Link
+            <a
               href={contactsHref}
               className="mt-4 inline-flex items-center justify-center rounded-full bg-[#ff6a3d] px-5 py-2 text-sm font-semibold text-white hover:bg-[#ff5a2b]"
             >
               {ui.footer.goToContacts}
-            </Link>
+            </a>
           </div>
         </div>
 
@@ -114,9 +113,9 @@ export function Footer({ lang = "ru", footerLinks = [] }) {
             © {new Date().getFullYear()} MG Group (Marescol S.L). {ui.footer.rights}
           </div>
           <div className="flex gap-4">
-            <Link className="hover:text-slate-900" href={privacyHref}>
+            <a className="hover:text-slate-900" href={privacyHref}>
               {ui.footer.privacy}
-            </Link>
+            </a>
           </div>
         </div>
       </Container>

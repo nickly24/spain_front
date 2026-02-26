@@ -1,5 +1,4 @@
 import Image from "next/image";
-import Link from "next/link";
 import { formatCompactK, formatMoneyEUR, formatViewsCount, getUi } from "../lib/ui";
 
 function StarIcon({ filled, half, gradientId, className }) {
@@ -48,7 +47,7 @@ export function PropertyCard({ property, basePath = "", lang = "ru" }) {
   const href = basePath ? `${basePath}/property/${property.slug}` : `/property/${property.slug}`;
 
   return (
-    <Link
+    <a
       href={href}
       className="group overflow-hidden rounded-3xl border border-black/10 bg-white hover:shadow-md transition-shadow"
     >
@@ -125,7 +124,7 @@ export function PropertyCard({ property, basePath = "", lang = "ru" }) {
           </div>
         </div>
       </div>
-    </Link>
+    </a>
   );
 }
 

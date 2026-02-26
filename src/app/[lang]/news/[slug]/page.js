@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageHero } from "../../../../components/PageHero";
 import { Container } from "../../../../components/Container";
@@ -77,12 +76,12 @@ export default async function NewsPostPage({ params }) {
           </article>
 
           <div className="mt-10">
-            <Link
+            <a
               href={`${base}/news`}
               className="inline-flex items-center justify-center rounded-full border border-black/10 bg-black/3 px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-black/5"
             >
               {backLabel}
-            </Link>
+            </a>
           </div>
         </Container>
       </section>

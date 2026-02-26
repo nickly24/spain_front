@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Container } from "../../../../components/Container";
 import { PageHero } from "../../../../components/PageHero";
@@ -175,12 +174,12 @@ export default async function PropertyPage({ params }) {
         <Container className="py-12">
           <div className="rounded-3xl border border-black/10 bg-white shadow-sm">
             <div className="group -mt-px rounded-t-3xl border-b border-black/10 px-6 py-4 transition-colors duration-200 hover:bg-[#ff6a3d]/10">
-              <Link
+              <a
                 href={catalogPath}
                 className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-slate-700 transition-colors duration-200 hover:bg-[#ff6a3d] hover:text-white"
               >
                 {backLabel}
-              </Link>
+              </a>
             </div>
 
             <div className="p-6">
@@ -294,12 +293,12 @@ export default async function PropertyPage({ params }) {
                 >
                   {callLabel}
                 </a>
-                <Link
+                <a
                   href={`${base}/contacts`}
                   className="inline-flex items-center justify-center rounded-2xl bg-[#ff6a3d] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#ff5a2b]"
                 >
                   {requestLabel}
-                </Link>
+                </a>
               </div>
             </div>
           </div>

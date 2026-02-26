@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { Container } from "./Container";
 import { useState, useEffect } from "react";
 
@@ -146,12 +145,12 @@ export function HeroSlideshow({ content = {} }) {
 
             {/* Две кнопки для любого раздела: Перейти в раздел + Позвонить */}
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Link
+              <a
                 href={activeSlide.sectionHref}
                 className="inline-flex items-center justify-center rounded-full bg-[#ff6a3d] px-6 py-3 text-sm font-semibold text-white hover:bg-[#ff5a2b]"
               >
                 {mainCta}
-              </Link>
+              </a>
               <a
                 href={TEL_HREF}
                 className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/5 px-6 py-3 text-sm font-semibold text-white hover:bg-white/10"

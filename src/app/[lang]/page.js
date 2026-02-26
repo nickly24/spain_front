@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Container } from "../../components/Container";
 import { HeroSlideshow } from "../../components/HeroSlideshow";
 import { PropertyCard } from "../../components/PropertyCard";
@@ -117,7 +116,7 @@ export default async function Home({ params }) {
       <section className="bg-[#e8f4e8]">
         <Container className="py-14">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <Link
+            <a
               href={`${base}/sale`}
               className="group block rounded-3xl border border-black/10 bg-white p-6 shadow-sm transition-all duration-300 ease-out hover:scale-[1.03] hover:border-[#7DC931]/30 hover:bg-[#7DC931] hover:shadow-lg"
             >
@@ -130,9 +129,9 @@ export default async function Home({ params }) {
               <span className="mt-4 inline-flex rounded-full px-4 py-2 text-sm font-semibold text-[#ff6a3d] transition-colors duration-300 group-hover:bg-white group-hover:text-[#7DC931]">
                 {quickSaleCta}
               </span>
-            </Link>
+            </a>
 
-            <Link
+            <a
               href={`${base}/rent`}
               className="group block rounded-3xl border border-black/10 bg-white p-6 shadow-sm transition-all duration-300 ease-out hover:scale-[1.03] hover:border-[#7DC931]/30 hover:bg-[#7DC931] hover:shadow-lg"
             >
@@ -145,9 +144,9 @@ export default async function Home({ params }) {
               <span className="mt-4 inline-flex rounded-full px-4 py-2 text-sm font-semibold text-[#ff6a3d] transition-colors duration-300 group-hover:bg-white group-hover:text-[#7DC931]">
                 {quickRentCta}
               </span>
-            </Link>
+            </a>
 
-            <Link
+            <a
               href={`${base}/construction`}
               className="group block rounded-3xl border border-black/10 bg-white p-6 shadow-sm transition-all duration-300 ease-out hover:scale-[1.03] hover:border-[#7DC931]/30 hover:bg-[#7DC931] hover:shadow-lg"
             >
@@ -160,7 +159,7 @@ export default async function Home({ params }) {
               <span className="mt-4 inline-flex rounded-full px-4 py-2 text-sm font-semibold text-[#ff6a3d] transition-colors duration-300 group-hover:bg-white group-hover:text-[#7DC931]">
                 {quickConstructionCta}
               </span>
-            </Link>
+            </a>
           </div>
         </Container>
       </section>
@@ -179,12 +178,12 @@ export default async function Home({ params }) {
                 {hotDescription}
               </p>
             </div>
-            <Link
+            <a
               href={`${base}/sale`}
               className="hidden sm:inline-flex items-center justify-center rounded-full bg-[#ff6a3d] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#ff5a2b]"
             >
               {hotCta}
-            </Link>
+            </a>
           </div>
 
           <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -194,12 +193,12 @@ export default async function Home({ params }) {
           </div>
 
           <div className="mt-8 sm:hidden">
-            <Link
+            <a
               href={`${base}/sale`}
               className="inline-flex w-full items-center justify-center rounded-full bg-[#ff6a3d] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#ff5a2b]"
             >
               {hotCta}
-            </Link>
+            </a>
           </div>
         </Container>
       </section>

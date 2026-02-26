@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { PageHero } from "../../../components/PageHero";
 import { Container } from "../../../components/Container";
 import { prisma } from "../../../lib/prisma";
@@ -73,7 +72,7 @@ export default async function NewsPage({ params }) {
               const title = pt?.title ?? p.title;
               const excerpt = pt?.excerpt ?? p.excerpt;
               return (
-                <Link
+                <a
                   key={p.slug}
                   href={`${base}/news/${p.slug}`}
                   className="group rounded-3xl border border-black/10 bg-white p-6 shadow-sm hover:shadow-md transition-shadow"
@@ -90,7 +89,7 @@ export default async function NewsPage({ params }) {
                   <div className="mt-4 text-sm font-semibold text-[#FF5A2B] group-hover:text-[#ff4b17]">
                     {readMore}
                   </div>
-                </Link>
+                </a>
               );
             })}
           </div>
