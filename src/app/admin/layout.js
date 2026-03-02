@@ -1,5 +1,7 @@
+import { Suspense } from "react";
 import { prisma } from "../../lib/prisma";
 import { AdminShell } from "./AdminShell";
+import { AdminToastHandler } from "../../components/AdminToastHandler";
 
 export const metadata = {
   title: {
@@ -9,11 +11,12 @@ export const metadata = {
 };
 
 export default async function AdminLayout({ children }) {
-  const [propertiesCount, newsCount, tagsCount, citiesCount] = await Promise.all([
+  const [propertiesCount, newsCount, tagsCount, citiesCount, casesCount] = await Promise.all([
     prisma.property.count(),
     prisma.newsPost.count(),
     prisma.tag.count(),
     prisma.city.count(),
+    prisma.constructionCase.count(),
   ]);
 
   const navSections = [
@@ -48,10 +51,20 @@ export default async function AdminLayout({ children }) {
     },
     {
       title: "Строительство",
-      items: [{ href: "/admin/construction", label: "Проекты" }],
+      items: [
+        { href: "/admin/construction", label: "Этапы и услуги" },
+        { href: "/admin/construction/cases", label: "Кейсы до/после", badge: casesCount },
+      ],
     },
   ];
 
-  return <AdminShell navSections={navSections}>{children}</AdminShell>;
+  return (
+    <AdminShell navSections={navSections}>
+      <Suspense fallback={null}>
+        <AdminToastHandler />
+      </Suspense>
+      {children}
+    </AdminShell>
+  );
 }
 

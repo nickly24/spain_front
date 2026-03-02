@@ -28,7 +28,7 @@ export default async function LangLayout({ children, params }) {
         socials={socials}
       />
       <main className="min-h-[calc(100svh-64px)]">{children}</main>
-      <PartnersBand partners={partners} />
+      <PartnersBand partners={partners} lang={lang} />
       <Footer lang={lang} footerLinks={nav.footer} />
     </>
   );

@@ -1,10 +1,12 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import path from "path";
 import { promises as fs } from "fs";
 import { prisma } from "../../../../lib/prisma";
 import { pickTranslatedLabel } from "../../../../lib/tags";
 import { Button } from "@/components/ui/button";
+import { SubmitButton, DeleteButton, ActionButton } from "@/components/FormWithPending";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -51,88 +53,92 @@ async function updateProperty(formData) {
     .map((v) => Number(v))
     .filter((n) => Number.isFinite(n) && n > 0);
 
-  await prisma.$transaction(async (tx) => {
-    await tx.property.update({
-      where: { id },
-      data: {
-        title,
-        slug,
-        city,
-        listingType,
-        bedrooms,
-        areaM2,
-        priceEur,
-        rentEurPerMonth,
-        status,
-        description,
-        views,
-        rating,
-      },
-    });
-
-    // Сохраняем только теги, которые относятся к текущему разделу (sale/rent).
-    const allowed = tagIds.length
-      ? await tx.tag.findMany({
-          where: { id: { in: tagIds }, section },
-          select: { id: true },
-        })
-      : [];
-    const allowedIds = allowed.map((t) => t.id);
-
-    await tx.propertyTag.deleteMany({ where: { propertyId: id } });
-    if (allowedIds.length) {
-      await tx.propertyTag.createMany({
-        data: allowedIds.map((tagId) => ({ propertyId: id, tagId })),
-        skipDuplicates: true,
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.property.update({
+        where: { id },
+        data: {
+          title,
+          slug,
+          city,
+          listingType,
+          bedrooms,
+          areaM2,
+          priceEur,
+          rentEurPerMonth,
+          status,
+          description,
+          views,
+          rating,
+        },
       });
-    }
 
-    async function upsertTr(locale, data) {
-      const hasAny =
-        (data.title || "").trim() ||
-        (data.description || "").trim() ||
-        (data.seoTitle || "").trim() ||
-        (data.seoDescription || "").trim();
-      if (!hasAny) {
-        await tx.propertyTranslation.deleteMany({ where: { propertyId: id, locale } });
-        return;
+      // Сохраняем только теги, которые относятся к текущему разделу (sale/rent).
+      const allowed = tagIds.length
+        ? await tx.tag.findMany({
+            where: { id: { in: tagIds }, section },
+            select: { id: true },
+          })
+        : [];
+      const allowedIds = allowed.map((t) => t.id);
+
+      await tx.propertyTag.deleteMany({ where: { propertyId: id } });
+      if (allowedIds.length) {
+        await tx.propertyTag.createMany({
+          data: allowedIds.map((tagId) => ({ propertyId: id, tagId })),
+          skipDuplicates: true,
+        });
       }
-      const safeTitle = (data.title || "").trim() || title;
-      const safeDesc = (data.description || "").trim() || description;
-      await tx.propertyTranslation.upsert({
-        where: { propertyId_locale: { propertyId: id, locale } },
-        update: {
-          title: safeTitle,
-          description: safeDesc,
-          seoTitle: (data.seoTitle || "").trim() || null,
-          seoDescription: (data.seoDescription || "").trim() || null,
-        },
-        create: {
-          propertyId: id,
-          locale,
-          title: safeTitle,
-          description: safeDesc,
-          seoTitle: (data.seoTitle || "").trim() || null,
-          seoDescription: (data.seoDescription || "").trim() || null,
-        },
+
+      async function upsertTr(locale, data) {
+        const hasAny =
+          (data.title || "").trim() ||
+          (data.description || "").trim() ||
+          (data.seoTitle || "").trim() ||
+          (data.seoDescription || "").trim();
+        if (!hasAny) {
+          await tx.propertyTranslation.deleteMany({ where: { propertyId: id, locale } });
+          return;
+        }
+        const safeTitle = (data.title || "").trim() || title;
+        const safeDesc = (data.description || "").trim() || description;
+        await tx.propertyTranslation.upsert({
+          where: { propertyId_locale: { propertyId: id, locale } },
+          update: {
+            title: safeTitle,
+            description: safeDesc,
+            seoTitle: (data.seoTitle || "").trim() || null,
+            seoDescription: (data.seoDescription || "").trim() || null,
+          },
+          create: {
+            propertyId: id,
+            locale,
+            title: safeTitle,
+            description: safeDesc,
+            seoTitle: (data.seoTitle || "").trim() || null,
+            seoDescription: (data.seoDescription || "").trim() || null,
+          },
+        });
+      }
+
+      await upsertTr("en", {
+        title: trTitleEn,
+        description: trDescEn,
+        seoTitle: trSeoTitleEn,
+        seoDescription: trSeoDescEn,
       });
-    }
-
-    await upsertTr("en", {
-      title: trTitleEn,
-      description: trDescEn,
-      seoTitle: trSeoTitleEn,
-      seoDescription: trSeoDescEn,
+      await upsertTr("es", {
+        title: trTitleEs,
+        description: trDescEs,
+        seoTitle: trSeoTitleEs,
+        seoDescription: trSeoDescEs,
+      });
     });
-    await upsertTr("es", {
-      title: trTitleEs,
-      description: trDescEs,
-      seoTitle: trSeoTitleEs,
-      seoDescription: trSeoDescEs,
-    });
-  });
 
-  redirect(`/admin/properties/${id}`);
+    redirect(`/admin/properties/${id}?message=${encodeURIComponent("Объект успешно сохранён")}&type=success`);
+  } catch (error) {
+    redirect(`/admin/properties/${id}?message=${encodeURIComponent("Ошибка при сохранении")}&type=error`);
+  }
 }
 
 async function deleteProperty(formData) {
@@ -157,48 +163,52 @@ async function addImage(formData) {
   const alt = formData.get("alt")?.toString() || "";
 
   if (!file || typeof file === "string") {
-    redirect(`/admin/properties/${propertyId}`);
+    redirect(`/admin/properties/${propertyId}?message=${encodeURIComponent("Файл не выбран")}&type=error`);
   }
 
-  const bytes = await file.arrayBuffer();
-  const buffer = Buffer.from(bytes);
+  try {
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
 
-  const uploadsDir = path.join(process.cwd(), "public", "uploads");
-  await fs.mkdir(uploadsDir, { recursive: true });
+    const uploadsDir = path.join(process.cwd(), "public", "uploads");
+    await fs.mkdir(uploadsDir, { recursive: true });
 
-  const originalName = (file.name || "image").toString();
-  const ext = path.extname(originalName) || ".jpg";
-  const base = path
-    .basename(originalName, ext)
-    .replace(/[^a-zA-Z0-9_-]/g, "_")
-    .toLowerCase();
-  const filename = `${base}_${Date.now()}${ext}`;
-  const filePath = path.join(uploadsDir, filename);
-  const publicUrl = `/uploads/${filename}`;
+    const originalName = (file.name || "image").toString();
+    const ext = path.extname(originalName) || ".jpg";
+    const base = path
+      .basename(originalName, ext)
+      .replace(/[^a-zA-Z0-9_-]/g, "_")
+      .toLowerCase();
+    const filename = `${base}_${Date.now()}${ext}`;
+    const filePath = path.join(uploadsDir, filename);
+    const publicUrl = `/uploads/${filename}`;
 
-  await fs.writeFile(filePath, buffer);
+    await fs.writeFile(filePath, buffer);
 
-  const maxOrder = await prisma.propertyImage.aggregate({
-    _max: { sortOrder: true },
-    where: { propertyId },
-  });
-  const nextOrder = (maxOrder._max.sortOrder ?? 0) + 1;
+    const maxOrder = await prisma.propertyImage.aggregate({
+      _max: { sortOrder: true },
+      where: { propertyId },
+    });
+    const nextOrder = (maxOrder._max.sortOrder ?? 0) + 1;
 
-  const hasMain = await prisma.propertyImage.findFirst({
-    where: { propertyId, isMain: true },
-  });
+    const hasMain = await prisma.propertyImage.findFirst({
+      where: { propertyId, isMain: true },
+    });
 
-  await prisma.propertyImage.create({
-    data: {
-      propertyId,
-      url: publicUrl,
-      alt,
-      sortOrder: nextOrder,
-      isMain: !hasMain,
-    },
-  });
+    await prisma.propertyImage.create({
+      data: {
+        propertyId,
+        url: publicUrl,
+        alt,
+        sortOrder: nextOrder,
+        isMain: !hasMain,
+      },
+    });
 
-  redirect(`/admin/properties/${propertyId}`);
+    redirect(`/admin/properties/${propertyId}?message=${encodeURIComponent("Фото добавлено")}&type=success`);
+  } catch (error) {
+    redirect(`/admin/properties/${propertyId}?message=${encodeURIComponent("Ошибка при загрузке фото")}&type=error`);
+  }
 }
 
 async function setMainImage(formData) {
@@ -208,17 +218,21 @@ async function setMainImage(formData) {
   const imageId = Number(formData.get("imageId"));
   if (!propertyId || !imageId) return;
 
-  await prisma.propertyImage.updateMany({
-    where: { propertyId },
-    data: { isMain: false },
-  });
+  try {
+    await prisma.propertyImage.updateMany({
+      where: { propertyId },
+      data: { isMain: false },
+    });
 
-  await prisma.propertyImage.update({
-    where: { id: imageId },
-    data: { isMain: true },
-  });
+    await prisma.propertyImage.update({
+      where: { id: imageId },
+      data: { isMain: true },
+    });
 
-  redirect(`/admin/properties/${propertyId}`);
+    redirect(`/admin/properties/${propertyId}?message=${encodeURIComponent("Главное фото изменено")}&type=success`);
+  } catch (error) {
+    redirect(`/admin/properties/${propertyId}?message=${encodeURIComponent("Ошибка при изменении главного фото")}&type=error`);
+  }
 }
 
 async function deleteImage(formData) {
@@ -228,20 +242,24 @@ async function deleteImage(formData) {
   const imageId = Number(formData.get("imageId"));
   if (!propertyId || !imageId) return;
 
-  const image = await prisma.propertyImage.findUnique({ where: { id: imageId } });
-  if (image?.url) {
-    const uploadsDir = path.join(process.cwd(), "public");
-    const abs = path.join(uploadsDir, image.url.replace(/^\/+/, ""));
-    try {
-      await fs.unlink(abs);
-    } catch {
-      // ignore if file missing
+  try {
+    const image = await prisma.propertyImage.findUnique({ where: { id: imageId } });
+    if (image?.url) {
+      const uploadsDir = path.join(process.cwd(), "public");
+      const abs = path.join(uploadsDir, image.url.replace(/^\/+/, ""));
+      try {
+        await fs.unlink(abs);
+      } catch {
+        // ignore if file missing
+      }
     }
+
+    await prisma.propertyImage.delete({ where: { id: imageId } });
+
+    redirect(`/admin/properties/${propertyId}?message=${encodeURIComponent("Фото удалено")}&type=success`);
+  } catch (error) {
+    redirect(`/admin/properties/${propertyId}?message=${encodeURIComponent("Ошибка при удалении фото")}&type=error`);
   }
-
-  await prisma.propertyImage.delete({ where: { id: imageId } });
-
-  redirect(`/admin/properties/${propertyId}`);
 }
 
 export default async function AdminPropertyEditPage({ params }) {
@@ -277,97 +295,108 @@ export default async function AdminPropertyEditPage({ params }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Объект #{property.id}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Редактирование базовой информации об объекте. Галерея и баннеры
-            будут вынесены в отдельный раздел.
+            Редактирование информации, фотографий и переводов объекта.
           </p>
+        </div>
+        <div className="flex gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link href="/admin/properties">← К списку</Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/ru/property/${property.slug}`} target="_blank">
+              На сайт ↗
+            </Link>
+          </Button>
         </div>
       </div>
 
       <form action={updateProperty} className="space-y-6">
         <input type="hidden" name="id" defaultValue={property.id} />
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Базовая информация</CardTitle>
-            <CardDescription>Поля и статус объекта на сайте.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Заголовок</Label>
-                  <Input name="title" defaultValue={property.title} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Slug (URL)</Label>
-                  <Input name="slug" defaultValue={property.slug} />
-                </div>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <CardTitle>Основная информация</CardTitle>
+              <CardDescription>Название, описание и параметры объекта.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label>Заголовок</Label>
+                <Input name="title" defaultValue={property.title} className="text-base" />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Slug (URL)</Label>
+                <Input name="slug" defaultValue={property.slug} className="font-mono text-sm" />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Описание</Label>
+                <Textarea name="description" defaultValue={property.description || ""} rows={6} />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Город</Label>
                   <Input name="city" defaultValue={property.city} />
                 </div>
-
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                  <div className="space-y-2">
-                    <Label>Формат</Label>
-                    <select
-                      name="listingType"
-                      defaultValue={property.listingType}
-                      className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      <option value="sale">Продажа</option>
-                      <option value="rent">Аренда</option>
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Спальни</Label>
-                    <Input name="bedrooms" type="number" defaultValue={property.bedrooms} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Площадь, м²</Label>
-                    <Input name="areaM2" type="number" defaultValue={property.areaM2} />
-                  </div>
+                <div className="space-y-2">
+                  <Label>Площадь, м²</Label>
+                  <Input name="areaM2" type="number" defaultValue={property.areaM2} />
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label>Цена, €</Label>
-                    <Input name="priceEur" type="number" defaultValue={property.priceEur ?? ""} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Аренда, €/мес</Label>
-                    <Input
-                      name="rentEurPerMonth"
-                      type="number"
-                      defaultValue={property.rentEurPerMonth ?? ""}
-                    />
-                  </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Спальни</Label>
+                  <Input name="bedrooms" type="number" defaultValue={property.bedrooms} />
                 </div>
-
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label>Просмотры</Label>
-                    <Input name="views" type="number" defaultValue={property.views ?? 0} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Рейтинг</Label>
-                    <Input
-                      name="rating"
-                      type="number"
-                      step="0.1"
-                      min="0"
-                      max="5"
-                      defaultValue={property.rating ?? 0}
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label>Формат</Label>
+                  <select
+                    name="listingType"
+                    defaultValue={property.listingType}
+                    className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <option value="sale">Продажа</option>
+                    <option value="rent">Аренда</option>
+                  </select>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
 
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Цена</CardTitle>
+                <CardDescription>Стоимость объекта.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Цена, €</Label>
+                  <Input name="priceEur" type="number" defaultValue={property.priceEur ?? ""} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Аренда, €/мес</Label>
+                  <Input
+                    name="rentEurPerMonth"
+                    type="number"
+                    defaultValue={property.rentEurPerMonth ?? ""}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Статус и метрики</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label>Статус</Label>
                   <select
@@ -380,15 +409,25 @@ export default async function AdminPropertyEditPage({ params }) {
                     <option value="archived">Архив</option>
                   </select>
                 </div>
-
                 <div className="space-y-2">
-                  <Label>Описание</Label>
-                  <Textarea name="description" defaultValue={property.description || ""} rows={6} />
+                  <Label>Просмотры</Label>
+                  <Input name="views" type="number" defaultValue={property.views ?? 0} />
                 </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                <div className="space-y-2">
+                  <Label>Рейтинг (0-5)</Label>
+                  <Input
+                    name="rating"
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="5"
+                    defaultValue={property.rating ?? 0}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
 
         <Card>
           <CardHeader>
@@ -499,7 +538,7 @@ export default async function AdminPropertyEditPage({ params }) {
                       name="tagIds"
                       value={t.id}
                       defaultChecked={selectedTagIds.has(t.id)}
-                      className="mt-0.5 accent-[hsl(var(--primary))]"
+                      className="mt-0.5 accent-primary"
                     />
                     <span className="min-w-0">
                       <span className="font-semibold">{ru}</span>{" "}
@@ -525,28 +564,23 @@ export default async function AdminPropertyEditPage({ params }) {
         </Card>
 
         <div className="flex flex-col-reverse items-start justify-between gap-3 sm:flex-row sm:items-center">
-          <Button asChild variant="link" className="px-0">
-            <Link href={`/ru/property/${property.slug}`}>Открыть объект на сайте</Link>
-          </Button>
-          <Button type="submit">Сохранить</Button>
+          <form action={deleteProperty}>
+            <input type="hidden" name="id" defaultValue={property.id} />
+            <DeleteButton size="sm">
+              Удалить объект
+            </DeleteButton>
+          </form>
+          <SubmitButton size="lg">
+            💾 Сохранить изменения
+          </SubmitButton>
         </div>
-      </form>
-
-      <form
-        action={deleteProperty}
-        className="mt-4 flex items-center justify-end"
-      >
-        <input type="hidden" name="id" defaultValue={property.id} />
-        <Button type="submit" variant="destructive">
-          Удалить объект
-        </Button>
       </form>
 
       <Card className="mt-6">
         <CardHeader>
           <CardTitle>Фотографии объекта</CardTitle>
           <CardDescription>
-            Загрузите новые фотографии и управляйте тем, какая считается основной. В списке ниже показываются имена файлов.
+            Загрузите новые фотографии и управляйте тем, какая считается основной.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -573,57 +607,78 @@ export default async function AdminPropertyEditPage({ params }) {
               </div>
               <Input name="alt" placeholder="Например: гостиная, вид с террасы…" />
             </div>
-            <Button type="submit">Добавить фото</Button>
+            <ActionButton loadingText="Загрузка...">Добавить фото</ActionButton>
           </form>
 
-          <div className="mt-4 overflow-hidden rounded-xl border border-border">
-            <Table className="text-xs">
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="px-3">Файл</TableHead>
-                  <TableHead className="px-3">Alt</TableHead>
-                  <TableHead className="px-3">Основное</TableHead>
-                  <TableHead className="px-3 text-right">Действия</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {property.images.map((img) => {
-                  const fileName = img.url.split("/").pop();
-                  return (
-                    <TableRow key={img.id}>
-                      <TableCell className="px-3">{fileName}</TableCell>
-                      <TableCell className="px-3 whitespace-normal text-muted-foreground">
+          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {property.images.map((img) => {
+              const fileName = img.url.split("/").pop();
+              return (
+                <div
+                  key={img.id}
+                  className="group relative overflow-hidden rounded-xl border border-border bg-card transition-all hover:border-primary/30 hover:shadow-md"
+                >
+                  <div className="relative aspect-4/3 overflow-hidden bg-muted">
+                    <Image
+                      src={img.url}
+                      alt={img.alt || fileName}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    />
+                    {img.isMain && (
+                      <div className="absolute left-2 top-2">
+                        <Badge variant="default" className="shadow-md">
+                          Основное
+                        </Badge>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-3">
+                    <div className="text-xs text-muted-foreground line-clamp-1" title={fileName}>
+                      {fileName}
+                    </div>
+                    {img.alt && (
+                      <div className="mt-1 text-xs text-foreground line-clamp-2" title={img.alt}>
                         {img.alt}
-                      </TableCell>
-                      <TableCell className="px-3">
-                        {img.isMain ? <Badge variant="default">Основное</Badge> : null}
-                      </TableCell>
-                      <TableCell className="px-3 text-right">
-                        <div className="flex flex-wrap items-center justify-end gap-2">
-                          {!img.isMain && (
-                            <form action={setMainImage}>
-                              <input type="hidden" name="propertyId" defaultValue={property.id} />
-                              <input type="hidden" name="imageId" defaultValue={img.id} />
-                              <Button type="submit" size="sm" variant="outline">
-                                Сделать главным
-                              </Button>
-                            </form>
-                          )}
-                          <form action={deleteImage}>
-                            <input type="hidden" name="propertyId" defaultValue={property.id} />
-                            <input type="hidden" name="imageId" defaultValue={img.id} />
-                            <Button type="submit" size="sm" variant="destructive">
-                              Удалить
-                            </Button>
-                          </form>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+                      </div>
+                    )}
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {!img.isMain && (
+                        <form action={setMainImage} className="flex-1">
+                          <input type="hidden" name="propertyId" defaultValue={property.id} />
+                          <input type="hidden" name="imageId" defaultValue={img.id} />
+                          <ActionButton size="sm" variant="outline" className="w-full" loadingText="Применение...">
+                            Сделать главным
+                          </ActionButton>
+                        </form>
+                      )}
+                      <form action={deleteImage}>
+                        <input type="hidden" name="propertyId" defaultValue={property.id} />
+                        <input type="hidden" name="imageId" defaultValue={img.id} />
+                        <DeleteButton size="sm">
+                          Удалить
+                        </DeleteButton>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
+          
+          {!property.images.length && (
+            <div className="mt-4 rounded-xl border border-dashed border-border bg-muted/30 p-8 text-center">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+                <svg className="h-8 w-8 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <p className="mt-4 text-sm text-muted-foreground">
+                Пока нет фотографий. Загрузите первую фотографию выше.
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

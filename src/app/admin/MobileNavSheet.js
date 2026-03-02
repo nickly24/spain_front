@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Menu } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 
 export function MobileNavSheet({ renderNav }) {
   const [open, setOpen] = useState(false);
@@ -22,6 +22,7 @@ export function MobileNavSheet({ renderNav }) {
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="p-4">
+        <SheetTitle className="sr-only">Навигация</SheetTitle>
         {renderNav(() => setOpen(false))}
       </SheetContent>
     </Sheet>

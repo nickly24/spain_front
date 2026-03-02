@@ -58,6 +58,9 @@ const UI = {
     contacts: {
       languagesLabel: "Языки",
     },
+    partners: {
+      title: "Наши партнёры",
+    },
   },
   en: {
     header: {
@@ -115,6 +118,9 @@ const UI = {
     contacts: {
       languagesLabel: "Languages",
     },
+    partners: {
+      title: "Our partners",
+    },
   },
   es: {
     header: {
@@ -171,6 +177,9 @@ const UI = {
     },
     contacts: {
       languagesLabel: "Idiomas",
+    },
+    partners: {
+      title: "Nuestros socios",
     },
   },
 };

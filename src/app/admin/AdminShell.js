@@ -3,13 +3,32 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
-import { Menu, ExternalLink } from "lucide-react";
-import { useMemo } from "react";
+import { 
+  Menu, 
+  ExternalLink, 
+  LayoutDashboard,
+  Home,
+  Tag,
+  MapPin,
+  FileText,
+  Layout,
+  Image as ImageIcon,
+  Navigation,
+  Mail,
+  Share2,
+  Users,
+  Hammer,
+  ChevronDown,
+  ChevronRight,
+  Images
+} from "lucide-react";
+import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 
 const MobileNavSheet = dynamic(
@@ -30,6 +49,28 @@ const MobileNavSheet = dynamic(
   }
 );
 
+// Маппинг иконок для пунктов меню
+const ICON_MAP = {
+  "Дашборд": LayoutDashboard,
+  "Объекты": Home,
+  "Теги": Tag,
+  "Города": MapPin,
+  "Новости и статьи": FileText,
+  "Страницы и баннеры": Layout,
+  "Медиа": ImageIcon,
+  "Навигация": Navigation,
+  "Контакты": Mail,
+  "Соцсети": Share2,
+  "Партнёры": Users,
+  "Этапы и услуги": Hammer,
+  "Кейсы до/после": Images,
+};
+
+function getIcon(label) {
+  const IconComponent = ICON_MAP[label];
+  return IconComponent ? <IconComponent className="h-4 w-4" /> : null;
+}
+
 function isActivePath(pathname, href) {
   if (!pathname) return false;
   if (href === "/admin") return pathname === "/admin";
@@ -38,6 +79,22 @@ function isActivePath(pathname, href) {
 
 function AdminNav({ sections, onNavigate }) {
   const pathname = usePathname();
+  const [openSections, setOpenSections] = useState(() => {
+    // По умолчанию открываем раздел, в котором находится активная страница
+    const initialOpen = {};
+    sections.forEach((sec, index) => {
+      const hasActive = sec.items.some(item => isActivePath(pathname, item.href));
+      initialOpen[index] = hasActive;
+    });
+    return initialOpen;
+  });
+
+  const toggleSection = (index) => {
+    setOpenSections(prev => ({
+      ...prev,
+      [index]: !prev[index]
+    }));
+  };
 
   return (
     <div className="flex h-full flex-col">
@@ -53,42 +110,75 @@ function AdminNav({ sections, onNavigate }) {
       <Separator className="my-3" />
 
       <ScrollArea className="flex-1">
-        <nav className="space-y-5 px-1 pb-6">
-          {sections.map((sec) => (
-            <div key={sec.title}>
-              <div className="mb-2 px-2 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                {sec.title}
-              </div>
-              <div className="space-y-1">
-                {sec.items.map((item) => {
-                  const active = isActivePath(pathname, item.href);
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={onNavigate}
-                      className={cn(
-                        "group flex items-center justify-between gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition-colors",
-                        active
-                          ? "bg-accent text-accent-foreground"
-                          : "text-foreground/80 hover:bg-accent hover:text-accent-foreground"
-                      )}
-                    >
-                      <span className="truncate">{item.label}</span>
-                      {typeof item.badge === "number" ? (
-                        <Badge
-                          variant={active ? "default" : "muted"}
-                          className="shrink-0"
+        <nav className="space-y-2 px-1 pb-6">
+          {sections.map((sec, index) => {
+            const isOpen = openSections[index];
+            const hasActive = sec.items.some(item => isActivePath(pathname, item.href));
+            
+            return (
+              <div key={sec.title}>
+                <button
+                  onClick={() => toggleSection(index)}
+                  className={cn(
+                    "flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition-colors",
+                    hasActive
+                      ? "bg-accent/50 text-accent-foreground"
+                      : "text-foreground/70 hover:bg-accent/30 hover:text-accent-foreground"
+                  )}
+                >
+                  <span className="text-xs uppercase tracking-wider">{sec.title}</span>
+                  {isOpen ? (
+                    <ChevronDown className="h-4 w-4 shrink-0" />
+                  ) : (
+                    <ChevronRight className="h-4 w-4 shrink-0" />
+                  )}
+                </button>
+                
+                {isOpen && (
+                  <div className="mt-1 space-y-1 pl-2">
+                    {sec.items.map((item) => {
+                      const active = isActivePath(pathname, item.href);
+                      const icon = getIcon(item.label);
+                      
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={onNavigate}
+                          className={cn(
+                            "group flex items-center justify-between gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition-colors",
+                            active
+                              ? "bg-accent text-accent-foreground"
+                              : "text-foreground/80 hover:bg-accent hover:text-accent-foreground"
+                          )}
                         >
-                          {item.badge}
-                        </Badge>
-                      ) : null}
-                    </Link>
-                  );
-                })}
+                          <div className="flex items-center gap-2 truncate">
+                            {icon && (
+                              <span className={cn(
+                                "shrink-0",
+                                active ? "text-accent-foreground" : "text-muted-foreground"
+                              )}>
+                                {icon}
+                              </span>
+                            )}
+                            <span className="truncate">{item.label}</span>
+                          </div>
+                          {typeof item.badge === "number" ? (
+                            <Badge
+                              variant={active ? "default" : "secondary"}
+                              className="shrink-0"
+                            >
+                              {item.badge}
+                            </Badge>
+                          ) : null}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </nav>
       </ScrollArea>
     </div>
@@ -147,6 +237,7 @@ export function AdminShell({ navSections = [], navItems, children }) {
           <div className="flex-1 px-4 py-6 lg:px-6">{children}</div>
         </main>
       </div>
+      <Toaster />
     </div>
   );
 }
