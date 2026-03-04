@@ -314,7 +314,7 @@ export default async function AdminPropertyEditPage({ params }) {
         </div>
       </div>
 
-      <form action={updateProperty} className="space-y-6">
+      <form id="update-property-form" action={updateProperty} className="space-y-6">
         <input type="hidden" name="id" defaultValue={property.id} />
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -563,18 +563,18 @@ export default async function AdminPropertyEditPage({ params }) {
           </CardContent>
         </Card>
 
-        <div className="flex flex-col-reverse items-start justify-between gap-3 sm:flex-row sm:items-center">
-          <form action={deleteProperty}>
-            <input type="hidden" name="id" defaultValue={property.id} />
-            <DeleteButton size="sm">
-              Удалить объект
-            </DeleteButton>
-          </form>
-          <SubmitButton size="lg">
-            💾 Сохранить изменения
-          </SubmitButton>
-        </div>
       </form>
+      <div className="flex flex-col-reverse items-start justify-between gap-3 sm:flex-row sm:items-center">
+        <form action={deleteProperty}>
+          <input type="hidden" name="id" value={property.id} />
+          <DeleteButton size="sm">
+            Удалить объект
+          </DeleteButton>
+        </form>
+        <SubmitButton size="lg" form="update-property-form">
+          💾 Сохранить изменения
+        </SubmitButton>
+      </div>
 
       <Card className="mt-6">
         <CardHeader>
@@ -586,6 +586,7 @@ export default async function AdminPropertyEditPage({ params }) {
         <CardContent>
           <form
             action={addImage}
+            encType="multipart/form-data"
             className="flex flex-col gap-3 rounded-xl border border-border bg-muted/30 p-4 text-xs md:flex-row md:items-end"
           >
             <input type="hidden" name="propertyId" defaultValue={property.id} />

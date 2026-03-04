@@ -12,9 +12,9 @@ export async function generateMetadata({ params }) {
   const lang = getLocaleFromParams(resolved);
   const ui = getUi(lang);
   const meta = await getPageMeta("about", lang);
-  return {
-    title: meta?.seoTitle ?? meta?.title ?? ui.meta.aboutDefault,
-  };
+  const title = meta?.seoTitle ?? meta?.title ?? ui.meta.aboutDefault;
+  const description = meta?.seoDescription ?? undefined;
+  return { title, description, openGraph: { title, description } };
 }
 
 export default async function AboutPage({ params }) {

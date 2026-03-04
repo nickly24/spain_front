@@ -12,16 +12,17 @@ export function AdminToastHandler() {
 
   useEffect(() => {
     if (message) {
-      // Определяем вариант toast
-      const isSuccess = type === "success";
       const isError = type === "error";
-      const variant = isError ? "destructive" : isSuccess ? "success" : "default";
-      
-      // Показываем toast только с описанием (без заголовка)
-      toast({
-        description: message,
-        variant,
-      });
+      if (isError) {
+        // Ошибки не показываем — только убираем параметры из URL
+      } else {
+        const isSuccess = type === "success";
+        const variant = isSuccess ? "success" : "default";
+        toast({
+          description: message,
+          variant,
+        });
+      }
 
       // Убираем параметры из URL
       const url = new URL(window.location.href);

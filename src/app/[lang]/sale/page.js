@@ -13,7 +13,9 @@ export async function generateMetadata({ params }) {
   const lang = getLocaleFromParams(resolved);
   const ui = getUi(lang);
   const meta = await getPageMeta("sale", lang);
-  return { title: meta?.seoTitle ?? meta?.title ?? ui.meta.saleDefault };
+  const title = meta?.seoTitle ?? meta?.title ?? ui.meta.saleDefault;
+  const description = meta?.seoDescription ?? undefined;
+  return { title, description, openGraph: { title, description } };
 }
 
 export default async function SalePage({ params }) {

@@ -10,7 +10,9 @@ export async function generateMetadata({ params }) {
   const lang = getLocaleFromParams(resolved);
   const ui = getUi(lang);
   const meta = await getPageMeta("contacts", lang);
-  return { title: meta?.seoTitle ?? meta?.title ?? ui.meta.contactsDefault };
+  const title = meta?.seoTitle ?? meta?.title ?? ui.meta.contactsDefault;
+  const description = meta?.seoDescription ?? undefined;
+  return { title, description, openGraph: { title, description } };
 }
 
 export default async function ContactsPage({ params }) {

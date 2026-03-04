@@ -13,7 +13,13 @@ export async function generateMetadata({ params }) {
   const lang = getLocaleFromParams(resolved);
   const ui = getUi(lang);
   const meta = await getPageMeta("home", lang);
-  return { title: meta?.seoTitle ?? meta?.title ?? ui.meta.homeDefault };
+  const title = meta?.seoTitle ?? meta?.title ?? ui.meta.homeDefault;
+  const description = meta?.seoDescription ?? undefined;
+  return {
+    title,
+    description,
+    openGraph: { title, description },
+  };
 }
 
 export default async function Home({ params }) {

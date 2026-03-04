@@ -21,6 +21,10 @@ async function savePage(formData) {
 
   const content = formData.get("page_content")?.toString() || "";
 
+  const trTitle = formData.get("tr_title")?.toString() || "";
+  const trSeoTitle = formData.get("tr_seoTitle")?.toString() || "";
+  const trSeoDescription = formData.get("tr_seoDescription")?.toString() || "";
+
   const fieldValues = entries
     .filter(([name]) => name.startsWith("field__"))
     .map(([name, value]) => {
@@ -63,6 +67,28 @@ async function savePage(formData) {
         create: { pageSlug: slug, key, value, locale },
       });
     }
+
+    const pageRow = await tx.page.findUnique({ where: { slug } });
+    if (pageRow) {
+      const safeTitle = trTitle.trim() || pageRow.title;
+      await tx.pageTranslation.upsert({
+        where: {
+          pageId_locale: { pageId: pageRow.id, locale },
+        },
+        update: {
+          title: safeTitle,
+          seoTitle: trSeoTitle.trim() || null,
+          seoDescription: trSeoDescription.trim() || null,
+        },
+        create: {
+          pageId: pageRow.id,
+          locale,
+          title: safeTitle,
+          seoTitle: trSeoTitle.trim() || null,
+          seoDescription: trSeoDescription.trim() || null,
+        },
+      });
+    }
   });
 
   redirect(`/admin/pages/${slug}?lang=${locale}`);
@@ -76,8 +102,13 @@ export default async function AdminPageEditPage({ params, searchParams }) {
   const langParam = (await Promise.resolve(searchParams))?.lang;
   const locale = langParam === "en" || langParam === "es" || langParam === "ru" ? langParam : "ru";
 
-  const page = await prisma.page.findUnique({ where: { slug } });
+  const page = await prisma.page.findUnique({
+    where: { slug },
+    include: { translations: { where: { locale }, take: 1 } },
+  });
   if (!page) return notFound();
+
+  const pageTr = page.translations?.[0];
 
   const fields = getPageFields(slug);
   const snippets = await prisma.pageContent.findMany({
@@ -171,6 +202,37 @@ export default async function AdminPageEditPage({ params, searchParams }) {
             </CardHeader>
 
             <CardContent className="flex-1 space-y-4 overflow-y-auto p-4">
+              <div className="space-y-3 rounded-2xl border border-primary/20 bg-primary/5 p-4">
+                <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                  SEO и оглавление ({localeLabel})
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[11px]">Заголовок страницы</Label>
+                  <Input
+                    name="tr_title"
+                    defaultValue={pageTr?.title ?? page.title}
+                    placeholder="Заголовок для этого языка"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[11px]">SEO title</Label>
+                  <Input
+                    name="tr_seoTitle"
+                    defaultValue={pageTr?.seoTitle ?? page.seoTitle ?? ""}
+                    placeholder="Мета title для поисковиков"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[11px]">SEO description</Label>
+                  <Textarea
+                    name="tr_seoDescription"
+                    defaultValue={pageTr?.seoDescription ?? page.seoDescription ?? ""}
+                    rows={3}
+                    placeholder="Описание для SEO и превью ссылок (og:description)"
+                  />
+                </div>
+              </div>
+
               {fields.length > 0 ? (
                 fields.map((field) => {
                   const id = `field__${field.key}`;
