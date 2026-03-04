@@ -27,7 +27,7 @@ export default async function AdminPropertiesPage() {
           take: 1,
         },
       },
-      orderBy: { id: "asc" },
+      orderBy: [{ sortOrder: "desc" }, { id: "asc" }],
     }),
     prisma.property.findMany({
       where: { listingType: "rent" },
@@ -37,7 +37,7 @@ export default async function AdminPropertiesPage() {
           take: 1,
         },
       },
-      orderBy: { id: "asc" },
+      orderBy: [{ sortOrder: "desc" }, { id: "asc" }],
     }),
   ]);
 

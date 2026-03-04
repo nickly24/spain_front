@@ -43,7 +43,7 @@ export default async function RentPage({ params }) {
           },
         },
       },
-      orderBy: { id: "asc" },
+      orderBy: [{ sortOrder: "desc" }, { id: "asc" }],
     }),
     prisma.heroBanner.findFirst({ where: { pageSlug: "rent" } }),
     prisma.pageContent.findMany({ where: { pageSlug: "rent", locale: lang } }),

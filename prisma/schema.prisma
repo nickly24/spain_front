@@ -102,6 +102,7 @@ model Property {
   status             PropertyStatus   @default(draft)
   views              Int              @default(0)
   rating             Float            @default(0)
+  sortOrder          Int              @default(0)
   seoTitle           String?          @db.VarChar(255)
   seoDescription     String?          @db.VarChar(512)
   badges             Json?

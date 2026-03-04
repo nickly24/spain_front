@@ -1,7 +1,5 @@
-import { Suspense } from "react";
 import { prisma } from "../../lib/prisma";
 import { AdminShell } from "./AdminShell";
-import { AdminToastHandler } from "../../components/AdminToastHandler";
 
 export const metadata = {
   title: {
@@ -60,9 +58,6 @@ export default async function AdminLayout({ children }) {
 
   return (
     <AdminShell navSections={navSections}>
-      <Suspense fallback={null}>
-        <AdminToastHandler />
-      </Suspense>
       {children}
     </AdminShell>
   );

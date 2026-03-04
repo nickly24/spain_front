@@ -42,7 +42,7 @@ export default async function Home({ params }) {
           },
         },
       },
-      orderBy: { id: "asc" },
+      orderBy: [{ sortOrder: "desc" }, { id: "asc" }],
       take: 3,
     }),
     prisma.page.findUnique({ where: { slug: "home" } }),

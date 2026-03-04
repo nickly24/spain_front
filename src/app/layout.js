@@ -19,6 +19,11 @@ export const metadata = {
   description:
     "MG Group (Marescol S.L): продажа, аренда и строительство недвижимости в Испании. Каталог объектов с фильтрами и удобной навигацией.",
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
+  icons: {
+    icon: "/ico.ico",
+    shortcut: "/ico.ico",
+    apple: "/ico.ico",
+  },
 };
 
 export default function RootLayout({ children }) {

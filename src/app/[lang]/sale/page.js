@@ -43,7 +43,7 @@ export default async function SalePage({ params }) {
           },
         },
       },
-      orderBy: { id: "asc" },
+      orderBy: [{ sortOrder: "desc" }, { id: "asc" }],
     }),
     prisma.heroBanner.findFirst({ where: { pageSlug: "sale" } }),
     prisma.pageContent.findMany({ where: { pageSlug: "sale", locale: lang } }),

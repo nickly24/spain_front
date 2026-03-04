@@ -24,7 +24,7 @@ async function updateProperty(formData) {
 
   const title = formData.get("title")?.toString() || "";
   const slug = formData.get("slug")?.toString() || "";
-  const city = formData.get("city")?.toString() || "";
+  const cityId = Number(formData.get("cityId") || 0) || null;
   const listingType = formData.get("listingType")?.toString() === "rent" ? "rent" : "sale";
   const bedrooms = Number(formData.get("bedrooms") || 0);
   const areaM2 = Number(formData.get("areaM2") || 0);
@@ -36,6 +36,7 @@ async function updateProperty(formData) {
   const description = formData.get("description")?.toString() || "";
   const views = Number(formData.get("views") || 0);
   const rating = Number(formData.get("rating") || 0);
+  const sortOrder = Number(formData.get("sortOrder") || 0) || 0;
 
   const trTitleEn = formData.get("tr_title_en")?.toString() || "";
   const trDescEn = formData.get("tr_description_en")?.toString() || "";
@@ -55,12 +56,29 @@ async function updateProperty(formData) {
 
   try {
     await prisma.$transaction(async (tx) => {
+      let cityLabelRu = "";
+      if (cityId) {
+        const city = await tx.city.findUnique({
+          where: { id: cityId },
+          include: {
+            translations: true,
+          },
+        });
+        if (city?.translations) {
+          cityLabelRu =
+            city.translations.find((t) => t.locale === "ru")?.label ||
+            city.translations[0]?.label ||
+            "";
+        }
+      }
+
       await tx.property.update({
         where: { id },
         data: {
           title,
           slug,
-          city,
+          city: cityLabelRu,
+          cityId: cityId || null,
           listingType,
           bedrooms,
           areaM2,
@@ -70,6 +88,7 @@ async function updateProperty(formData) {
           description,
           views,
           rating,
+          sortOrder,
         },
       });
 
@@ -205,9 +224,33 @@ async function addImage(formData) {
       },
     });
 
-    redirect(`/admin/properties/${propertyId}?message=${encodeURIComponent("Фото добавлено")}&type=success`);
+    redirect(
+      `/admin/properties/${propertyId}?message=${encodeURIComponent(
+        "Фото добавлено",
+      )}&type=success`,
+    );
   } catch (error) {
-    redirect(`/admin/properties/${propertyId}?message=${encodeURIComponent("Ошибка при загрузке фото")}&type=error`);
+    // Если ошибка произошла уже после создания записи, не пугаем пользователя ложной ошибкой.
+    try {
+      const anyImage = await prisma.propertyImage.findFirst({
+        where: { propertyId },
+      });
+      if (anyImage) {
+        redirect(
+          `/admin/properties/${propertyId}?message=${encodeURIComponent(
+            "Фото добавлено",
+          )}&type=success`,
+        );
+      }
+    } catch {
+      // ignore secondary errors
+    }
+
+    redirect(
+      `/admin/properties/${propertyId}?message=${encodeURIComponent(
+        "Ошибка при загрузке фото",
+      )}&type=error`,
+    );
   }
 }
 
@@ -277,17 +320,38 @@ export default async function AdminPropertyEditPage({ params }) {
         select: { tagId: true },
       },
       translations: true,
+      cityRel: {
+        include: { translations: true },
+      },
     },
   });
   if (!property) return notFound();
 
   const isSale = property.listingType === "sale";
   const section = isSale ? "sale" : "rent";
-  const availableTags = await prisma.tag.findMany({
-    where: { section },
-    orderBy: [{ visible: "desc" }, { sortOrder: "asc" }, { id: "asc" }],
-    include: { translations: true, _count: { select: { properties: true } } },
-  });
+
+  const [cities, availableTags, prevProperty, nextProperty] = await Promise.all([
+    prisma.city.findMany({
+      where: { visible: true },
+      orderBy: [{ sortOrder: "asc" }, { id: "asc" }],
+      include: { translations: true },
+    }),
+    prisma.tag.findMany({
+      where: { section },
+      orderBy: [{ visible: "desc" }, { sortOrder: "asc" }, { id: "asc" }],
+      include: { translations: true, _count: { select: { properties: true } } },
+    }),
+    prisma.property.findFirst({
+      where: { id: { lt: property.id } },
+      orderBy: { id: "desc" },
+      select: { id: true, title: true },
+    }),
+    prisma.property.findFirst({
+      where: { id: { gt: property.id } },
+      orderBy: { id: "asc" },
+      select: { id: true, title: true },
+    }),
+  ]);
   const selectedTagIds = new Set((property.tags || []).map((t) => t.tagId));
   const trByLocale = new Map((property.translations || []).map((t) => [t.locale, t]));
   const trEn = trByLocale.get("en") || null;
@@ -302,9 +366,23 @@ export default async function AdminPropertyEditPage({ params }) {
             Редактирование информации, фотографий и переводов объекта.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          {prevProperty && (
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/admin/properties/${prevProperty.id}`} title={prevProperty.title || ""}>
+                ← Предыдущий
+              </Link>
+            </Button>
+          )}
+          {nextProperty && (
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/admin/properties/${nextProperty.id}`} title={nextProperty.title || ""}>
+                Следующий →
+              </Link>
+            </Button>
+          )}
           <Button asChild variant="outline" size="sm">
-            <Link href="/admin/properties">← К списку</Link>
+            <Link href="/admin/properties">К списку</Link>
           </Button>
           <Button asChild variant="outline" size="sm">
             <Link href={`/ru/property/${property.slug}`} target="_blank">
@@ -342,7 +420,24 @@ export default async function AdminPropertyEditPage({ params }) {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Город</Label>
-                  <Input name="city" defaultValue={property.city} />
+                  <select
+                    name="cityId"
+                    defaultValue={property.cityId ?? ""}
+                    className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <option value="">Не выбрано</option>
+                    {cities.map((c) => {
+                      const ru =
+                        c.translations.find((t) => t.locale === "ru")?.label ||
+                        c.translations[0]?.label ||
+                        c.key;
+                      return (
+                        <option key={c.id} value={c.id}>
+                          {ru}
+                        </option>
+                      );
+                    })}
+                  </select>
                 </div>
                 <div className="space-y-2">
                   <Label>Площадь, м²</Label>
@@ -394,7 +489,7 @@ export default async function AdminPropertyEditPage({ params }) {
 
             <Card>
               <CardHeader>
-                <CardTitle>Статус и метрики</CardTitle>
+                <CardTitle>Статус, метрики и позиция</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -423,6 +518,13 @@ export default async function AdminPropertyEditPage({ params }) {
                     max="5"
                     defaultValue={property.rating ?? 0}
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label>Позиция (сортировка)</Label>
+                  <Input name="sortOrder" type="number" defaultValue={property.sortOrder ?? 0} />
+                  <p className="text-xs text-muted-foreground">
+                    Чем больше число — тем выше объект в списке и на сайте.
+                  </p>
                 </div>
               </CardContent>
             </Card>
