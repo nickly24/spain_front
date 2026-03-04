@@ -149,7 +149,6 @@ async function createProperty(formData) {
 
     const safeMainOrder =
       mainOrderRaw >= 0 && mainOrderRaw < indexSequence.length ? mainOrderRaw : 0;
-
     const uploadsDir = path.join(process.cwd(), "public", "uploads");
     await fs.mkdir(uploadsDir, { recursive: true });
 
@@ -213,12 +212,12 @@ export default async function AdminPropertyCreatePage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Новый объект</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Создание объекта для продажи или аренды. После сохранения можно будет
-          донастроить остальные поля.
+          Создание объекта для продажи или аренды. После сохранения можно будет донастроить
+          остальные поля.
         </p>
       </div>
 
-      <form action={createProperty} className="space-y-6">
+      <form action={createProperty} encType="multipart/form-data" className="space-y-6">
         <Card>
           <CardHeader>
             <CardTitle>Базовые данные</CardTitle>

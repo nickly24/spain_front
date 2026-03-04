@@ -98,8 +98,9 @@ model Property {
   areaM2             Int
   priceEur           Int?
   rentEurPerMonth    Int?
-  description        String
+  description        String           @db.Text
   status             PropertyStatus   @default(draft)
+  sortOrder          Int              @default(0)
   views              Int              @default(0)
   rating             Float            @default(0)
   sortOrder          Int              @default(0)
@@ -361,7 +362,7 @@ model PropertyTranslation {
   propertyId     Int
   locale         Locale
   title          String
-  description    String
+  description    String   @db.Text
   seoTitle       String?  @db.VarChar(255)
   seoDescription String?  @db.VarChar(512)
 

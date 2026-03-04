@@ -10,7 +10,9 @@ export async function generateMetadata({ params }) {
   const lang = getLocaleFromParams(resolved);
   const ui = getUi(lang);
   const meta = await getPageMeta("news", lang);
-  return { title: meta?.seoTitle ?? meta?.title ?? ui.meta.newsDefault };
+  const title = meta?.seoTitle ?? meta?.title ?? ui.meta.newsDefault;
+  const description = meta?.seoDescription ?? undefined;
+  return { title, description, openGraph: { title, description } };
 }
 
 export default async function NewsPage({ params }) {

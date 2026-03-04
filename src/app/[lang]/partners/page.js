@@ -10,7 +10,9 @@ export async function generateMetadata({ params }) {
   const lang = getLocaleFromParams(resolved);
   const ui = getUi(lang);
   const meta = await getPageMeta("partners", lang);
-  return { title: meta?.seoTitle ?? meta?.title ?? ui.meta.partnersDefault };
+  const title = meta?.seoTitle ?? meta?.title ?? ui.meta.partnersDefault;
+  const description = meta?.seoDescription ?? undefined;
+  return { title, description, openGraph: { title, description } };
 }
 
 export default async function PartnersPage({ params }) {

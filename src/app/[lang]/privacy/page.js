@@ -10,7 +10,9 @@ export async function generateMetadata({ params }) {
   const lang = getLocaleFromParams(resolved);
   const ui = getUi(lang);
   const meta = await getPageMeta("privacy", lang);
-  return { title: meta?.seoTitle ?? meta?.title ?? ui.meta.privacyDefault };
+  const title = meta?.seoTitle ?? meta?.title ?? ui.meta.privacyDefault;
+  const description = meta?.seoDescription ?? undefined;
+  return { title, description, openGraph: { title, description } };
 }
 
 export default async function PrivacyPage({ params }) {

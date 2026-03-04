@@ -11,7 +11,9 @@ export async function generateMetadata({ params }) {
   const lang = getLocaleFromParams(resolved);
   const ui = getUi(lang);
   const meta = await getPageMeta("construction", lang);
-  return { title: meta?.seoTitle ?? meta?.title ?? ui.meta.constructionDefault };
+  const title = meta?.seoTitle ?? meta?.title ?? ui.meta.constructionDefault;
+  const description = meta?.seoDescription ?? undefined;
+  return { title, description, openGraph: { title, description } };
 }
 
 export default async function ConstructionPage({ params }) {
