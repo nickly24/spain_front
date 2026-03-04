@@ -1,7 +1,15 @@
 import { redirect } from "next/navigation";
+import path from "path";
+import { promises as fs } from "fs";
 import { prisma } from "../../../../lib/prisma";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,6 +28,9 @@ async function createProperty(formData) {
   const rentEurPerMonth =
     listingType === "rent" ? Number(formData.get("rentEurPerMonth") || 0) || null : null;
   const description = formData.get("description")?.toString() || "";
+  const status = formData.get("status")?.toString() || "draft";
+  const views = Number(formData.get("views") || 0);
+  const rating = Number(formData.get("rating") || 0);
 
   const created = await prisma.property.create({
     data: {
@@ -32,11 +43,50 @@ async function createProperty(formData) {
       priceEur,
       rentEurPerMonth,
       description,
-      status: "draft",
-      views: 0,
-      rating: 0,
+      status,
+      views,
+      rating,
     },
   });
+
+  // Загрузка фотографий вместе с созданием объекта
+  const files = formData.getAll("images").filter((file) => file && typeof file !== "string");
+  if (files.length) {
+    const uploadsDir = path.join(process.cwd(), "public", "uploads");
+    await fs.mkdir(uploadsDir, { recursive: true });
+
+    let sortOrder = 1;
+    // Первая загруженная фотография автоматически становится главной
+    for (let index = 0; index < files.length; index++) {
+      const file = files[index];
+      if (!file || typeof file === "string") continue;
+
+      const bytes = await file.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+
+      const originalName = (file.name || "image").toString();
+      const ext = path.extname(originalName) || ".jpg";
+      const base = path
+        .basename(originalName, ext)
+        .replace(/[^a-zA-Z0-9_-]/g, "_")
+        .toLowerCase();
+      const filename = `${base}_${Date.now()}_${index}${ext}`;
+      const filePath = path.join(uploadsDir, filename);
+      const publicUrl = `/uploads/${filename}`;
+
+      await fs.writeFile(filePath, buffer);
+
+      await prisma.propertyImage.create({
+        data: {
+          propertyId: created.id,
+          url: publicUrl,
+          alt: title || originalName,
+          sortOrder: sortOrder++,
+          isMain: index === 0,
+        },
+      });
+    }
+  }
 
   redirect(`/admin/properties/${created.id}`);
 }
@@ -115,6 +165,63 @@ export default function AdminPropertyCreatePage() {
             </div>
           </CardContent>
         </Card>
+
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Статус и метрики</CardTitle>
+              <CardDescription>Можно сразу задать статус и базовые показатели.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Статус</Label>
+                <select
+                  name="status"
+                  defaultValue="draft"
+                  className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <option value="draft">Черновик</option>
+                  <option value="published">Опубликован</option>
+                  <option value="archived">Архив</option>
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Просмотры</Label>
+                  <Input name="views" type="number" defaultValue={0} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Рейтинг (0-5)</Label>
+                  <Input name="rating" type="number" step="0.1" min="0" max="5" defaultValue={0} />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Фотографии</CardTitle>
+              <CardDescription>
+                Можно сразу загрузить фото. Первая загруженная фотография станет главной.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <Label>Файлы изображений</Label>
+                <input
+                  type="file"
+                  name="images"
+                  accept="image/*"
+                  multiple
+                  className="block w-full text-xs file:mr-3 file:rounded-md file:border-0 file:bg-secondary file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-secondary-foreground hover:file:opacity-90"
+                />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Можно выбрать несколько изображений, они сохранятся сразу при создании объекта.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         <div className="flex items-center justify-end">
           <Button type="submit">Создать объект</Button>
