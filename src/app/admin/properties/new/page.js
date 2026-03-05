@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import path from "path";
-import { promises as fs } from "fs";
 import { prisma } from "../../../../lib/prisma";
+import { uploadFile } from "../../../../lib/s3";
 import { CreatePropertyForm } from "@/components/admin/CreatePropertyForm";
 
 async function createProperty(formData) {
@@ -55,12 +54,8 @@ async function createProperty(formData) {
     },
   });
 
-  // Загрузка фотографий — CreatePropertyForm передаёт files в порядке (главное первое)
   const files = formData.getAll("images").filter((file) => file && typeof file !== "string");
   if (files.length) {
-    const uploadsDir = path.join(process.cwd(), "public", "uploads");
-    await fs.mkdir(uploadsDir, { recursive: true });
-
     let sortOrder = 1;
     for (let index = 0; index < files.length; index++) {
       const file = files[index];
@@ -70,16 +65,14 @@ async function createProperty(formData) {
       const buffer = Buffer.from(bytes);
 
       const originalName = (file.name || "image").toString();
-      const ext = path.extname(originalName) || ".jpg";
-      const base = path
-        .basename(originalName, ext)
+      const ext = originalName.split(".").pop()?.toLowerCase() || "jpg";
+      const base = originalName
+        .replace(/\.[^.]+$/, "")
         .replace(/[^a-zA-Z0-9_-]/g, "_")
         .toLowerCase();
-      const filename = `${base}_${Date.now()}_${index}${ext}`;
-      const filePath = path.join(uploadsDir, filename);
-      const publicUrl = `/uploads/${filename}`;
+      const key = `uploads/${base}_${Date.now()}_${index}.${ext}`;
 
-      await fs.writeFile(filePath, buffer);
+      const publicUrl = await uploadFile(buffer, key, file.type || "image/jpeg");
 
       await prisma.propertyImage.create({
         data: {

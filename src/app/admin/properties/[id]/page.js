@@ -2,9 +2,8 @@ import { notFound, redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import Link from "next/link";
 import Image from "next/image";
-import path from "path";
-import { promises as fs } from "fs";
 import { prisma } from "../../../../lib/prisma";
+import { uploadFile, deleteFile } from "../../../../lib/s3";
 import { pickTranslatedLabel } from "../../../../lib/tags";
 import { Button } from "@/components/ui/button";
 import { SubmitButton, DeleteButton, ActionButton } from "@/components/FormWithPending";
@@ -213,20 +212,15 @@ async function addImage(formData) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    const uploadsDir = path.join(process.cwd(), "public", "uploads");
-    await fs.mkdir(uploadsDir, { recursive: true });
-
     const originalName = (file.name || "image").toString();
-    const ext = path.extname(originalName) || ".jpg";
-    const base = path
-      .basename(originalName, ext)
+    const ext = originalName.split(".").pop()?.toLowerCase() || "jpg";
+    const base = originalName
+      .replace(/\.[^.]+$/, "")
       .replace(/[^a-zA-Z0-9_-]/g, "_")
       .toLowerCase();
-    const filename = `${base}_${Date.now()}${ext}`;
-    const filePath = path.join(uploadsDir, filename);
-    const publicUrl = `/uploads/${filename}`;
+    const key = `uploads/${base}_${Date.now()}.${ext}`;
 
-    await fs.writeFile(filePath, buffer);
+    const publicUrl = await uploadFile(buffer, key, file.type || "image/jpeg");
 
     const maxOrder = await prisma.propertyImage.aggregate({
       _max: { sortOrder: true },
@@ -302,13 +296,7 @@ async function deleteImage(formData) {
   try {
     const image = await prisma.propertyImage.findUnique({ where: { id: imageId } });
     if (image?.url) {
-      const uploadsDir = path.join(process.cwd(), "public");
-      const abs = path.join(uploadsDir, image.url.replace(/^\/+/, ""));
-      try {
-        await fs.unlink(abs);
-      } catch {
-        // ignore if file missing
-      }
+      await deleteFile(image.url);
     }
 
     await prisma.propertyImage.delete({ where: { id: imageId } });

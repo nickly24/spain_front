@@ -1,10 +1,9 @@
-import path from "path";
-import { promises as fs } from "fs";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "../../../../lib/prisma";
+import { uploadFile, deleteFile } from "../../../../lib/s3";
 import { Button } from "@/components/ui/button";
 import { SubmitButton, DeleteButton } from "@/components/FormWithPending";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -46,32 +45,16 @@ async function saveUploadedFile(file, prefix = "file") {
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
 
-  const uploadsDir = path.join(process.cwd(), "public", "uploads", "construction");
-  await fs.mkdir(uploadsDir, { recursive: true });
-
   const originalName = (file.name || prefix).toString();
-  const ext = path.extname(originalName) || ".jpg";
-  const base = path
-    .basename(originalName, ext)
+  const ext = originalName.split(".").pop()?.toLowerCase() || "jpg";
+  const base = originalName
+    .replace(/\.[^.]+$/, "")
     .replace(/[^a-zA-Z0-9_-]/g, "_")
     .toLowerCase()
     .slice(0, 40);
 
-  const filename = `${prefix}_${base}_${Date.now()}${ext}`;
-  const abs = path.join(uploadsDir, filename);
-  await fs.writeFile(abs, buffer);
-  return `/uploads/construction/${filename}`;
-}
-
-async function deleteOldFile(url) {
-  if (!url || !url.startsWith("/uploads/")) return;
-  const uploadsDir = path.join(process.cwd(), "public");
-  const abs = path.join(uploadsDir, url.replace(/^\/+/, ""));
-  try {
-    await fs.unlink(abs);
-  } catch {
-    // Игнорируем, если файл не найден
-  }
+  const key = `uploads/construction/${prefix}_${base}_${Date.now()}.${ext}`;
+  return await uploadFile(buffer, key, file.type || "image/jpeg");
 }
 
 async function createCase(formData) {
@@ -148,7 +131,7 @@ async function saveCase(formData) {
   if (beforeFile && typeof beforeFile !== "string" && beforeFile.size > 0) {
     const newUrl = await saveUploadedFile(beforeFile, `case_${id}_before`);
     if (newUrl) {
-      await deleteOldFile(currentBeforeUrl);
+      await deleteFile(currentBeforeUrl);
       beforeUrl = newUrl;
     }
   }
@@ -156,7 +139,7 @@ async function saveCase(formData) {
   if (afterFile && typeof afterFile !== "string" && afterFile.size > 0) {
     const newUrl = await saveUploadedFile(afterFile, `case_${id}_after`);
     if (newUrl) {
-      await deleteOldFile(currentAfterUrl);
+      await deleteFile(currentAfterUrl);
       afterUrl = newUrl;
     }
   }
@@ -225,8 +208,8 @@ async function deleteCase(formData) {
   try {
     const caseData = await prisma.constructionCase.findUnique({ where: { id } });
     if (caseData) {
-      await deleteOldFile(caseData.beforeUrl);
-      await deleteOldFile(caseData.afterUrl);
+      await deleteFile(caseData.beforeUrl);
+      await deleteFile(caseData.afterUrl);
     }
 
     await prisma.constructionCase.delete({ where: { id } });

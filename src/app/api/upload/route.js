@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { promises as fs } from "fs";
-import path from "path";
 import { prisma } from "../../../lib/prisma";
+import { uploadFile } from "../../../lib/s3";
 
 export const dynamic = "force-dynamic";
 
@@ -30,32 +29,26 @@ export async function POST(req) {
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
 
-  const uploadsDir = path.join(process.cwd(), "public", "uploads");
-  await fs.mkdir(uploadsDir, { recursive: true });
-
-  const ext = path.extname(file.name || "").toLowerCase() || ".jpg";
-  const base = path.basename(file.name || "image", ext).replace(/[^a-z0-9_-]/gi, "_");
+  const ext = (file.name || "").split(".").pop()?.toLowerCase() || "jpg";
+  const base = (file.name || "image").replace(/\.[^.]+$/, "").replace(/[^a-z0-9_-]/gi, "_");
   const timestamp = Date.now();
-  const filename = `${base}_${timestamp}${ext}`;
-  const filePath = path.join(uploadsDir, filename);
-  const publicPath = `/uploads/${filename}`;
+  const key = `uploads/${base}_${timestamp}.${ext}`;
 
-  await fs.writeFile(filePath, buffer);
+  const publicUrl = await uploadFile(buffer, key, file.type || "image/jpeg");
 
   if (kind === "hero" && pageSlug) {
     const existing = await prisma.heroBanner.findFirst({ where: { pageSlug } });
     if (existing) {
       await prisma.heroBanner.update({
         where: { id: existing.id },
-        data: { imageUrl: publicPath },
+        data: { imageUrl: publicUrl },
       });
     } else {
       await prisma.heroBanner.create({
-        data: { pageSlug, imageUrl: publicPath },
+        data: { pageSlug, imageUrl: publicUrl },
       });
     }
   }
 
-  return NextResponse.json({ url: publicPath });
+  return NextResponse.json({ url: publicUrl });
 }
-

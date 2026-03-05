@@ -1,8 +1,7 @@
-import path from "path";
-import { promises as fs } from "fs";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { uploadFile, deleteFile } from "@/lib/s3";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,28 +25,12 @@ async function savePartnerLogo(file, prefix = "partner") {
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
 
-  const uploadsDir = path.join(process.cwd(), "public", "uploads", "partners");
-  await fs.mkdir(uploadsDir, { recursive: true });
-
   const original = file.name || "logo";
-  const ext = path.extname(original).toLowerCase() || ".png";
-  const base = safeFileName(path.basename(original, ext));
-  const filename = `${prefix}_${base}_${Date.now()}${ext}`;
+  const ext = original.split(".").pop()?.toLowerCase() || "png";
+  const base = safeFileName(original.replace(/\.[^.]+$/, ""));
+  const key = `uploads/partners/${prefix}_${base}_${Date.now()}.${ext}`;
 
-  const abs = path.join(uploadsDir, filename);
-  await fs.writeFile(abs, buffer);
-  return `/uploads/partners/${filename}`;
-}
-
-async function deleteLocalIfPossible(url) {
-  const raw = String(url || "");
-  if (!raw.startsWith("/uploads/partners/")) return;
-  const abs = path.join(process.cwd(), "public", raw.replace(/^\/+/, ""));
-  try {
-    await fs.unlink(abs);
-  } catch {
-    // ignore
-  }
+  return await uploadFile(buffer, key, file.type || "image/png");
 }
 
 async function createPartner(formData) {
@@ -88,7 +71,7 @@ async function updatePartner(formData) {
   let logoUrl = current.logoUrl;
   const uploaded = await savePartnerLogo(file, `partner_${id}`);
   if (uploaded) {
-    await deleteLocalIfPossible(logoUrl);
+    await deleteFile(logoUrl);
     logoUrl = uploaded;
   }
 
@@ -107,7 +90,7 @@ async function deletePartner(formData) {
   if (!id) return;
 
   const row = await prisma.partner.findUnique({ where: { id } });
-  if (row?.logoUrl) await deleteLocalIfPossible(row.logoUrl);
+  if (row?.logoUrl) await deleteFile(row.logoUrl);
 
   await prisma.partner.delete({ where: { id } });
   revalidatePath("/", "layout");
@@ -262,4 +245,3 @@ export default async function AdminPartnersPage() {
     </div>
   );
 }
-
