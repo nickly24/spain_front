@@ -2,21 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { cn } from "@/lib/utils";
-
-function sig(n, digits = 6) {
-  const num = typeof n === "number" ? n : Number(n);
-  if (!Number.isFinite(num)) return "0";
-  // Приводим к одинаковой строке для SSR/CSR (устраняет hydration mismatch)
-  // Пример: 0.2583030323 -> "0.258303"
-  const s = num.toPrecision(digits);
-  return String(Number(s)); // убирает хвостовые нули
-}
-
-function repeatToMin(items, minLen) {
+function repeatToFill(items, minLen) {
   const list = Array.isArray(items) ? items.filter(Boolean) : [];
-  if (list.length >= minLen) return list;
   if (!list.length) return [];
+  if (list.length >= minLen) return list;
   const out = [];
   while (out.length < minLen) out.push(...list);
   return out.slice(0, minLen);
@@ -29,53 +18,88 @@ function chunk(items, size) {
   return out;
 }
 
+const CARD_W = 200;
+const GAP = 28;
+const SLOT = CARD_W + GAP;
+const SPEED = 0.035;
+
+function LogoCard({ partner }) {
+  const inner = (
+    <div className="flex h-[84px] w-[200px] items-center justify-center rounded-2xl border border-black/10 bg-white shadow-[0_10px_30px_rgba(2,6,23,0.08)]">
+      <img
+        src={partner.logoUrl}
+        alt={partner.name || "Партнёр"}
+        className="max-h-[46px] max-w-[170px] object-contain"
+        loading="lazy"
+      />
+    </div>
+  );
+
+  if (partner.href) {
+    return (
+      <a
+        href={partner.href}
+        target="_blank"
+        rel="noreferrer"
+        className="rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-black/20"
+        aria-label={partner.name ? `Партнёр: ${partner.name}` : "Партнёр"}
+      >
+        {inner}
+      </a>
+    );
+  }
+  return inner;
+}
+
 export function PartnersCarousel({ partners }) {
-  const baseItems = useMemo(() => (Array.isArray(partners) ? partners.filter(Boolean) : []), [partners]);
-  const items = useMemo(() => repeatToMin(baseItems, 10), [baseItems]);
-  const rafRef = useRef(0);
-  const lastRef = useRef(0);
-  const phaseRef = useRef(0);
-  const [phase, setPhase] = useState(0);
+  const baseItems = useMemo(
+    () => (Array.isArray(partners) ? partners.filter(Boolean) : []),
+    [partners],
+  );
+
   const [mobilePage, setMobilePage] = useState(0);
   const touchStartXRef = useRef(null);
+  const stripRef = useRef(null);
+
+  const minForViewport = Math.ceil(1600 / SLOT) + 1;
+  const singleStrip = useMemo(
+    () => repeatToFill(baseItems, minForViewport),
+    [baseItems, minForViewport],
+  );
+  const stripPx = singleStrip.length * SLOT;
 
   useEffect(() => {
-    if (!items.length) return;
+    if (!singleStrip.length || !stripPx) return;
+
+    let offset = 0;
+    let last = 0;
+    let raf = 0;
 
     function tick(ts) {
-      if (!lastRef.current) lastRef.current = ts;
-      const dt = Math.min(40, ts - lastRef.current);
-      lastRef.current = ts;
-
-      // скорость вращения (в радианах/мс)
-      // скорость вращения (в радианах/мс)
-      // намеренно медленно: “витрина партнёров”, а не спиннер
-      phaseRef.current += dt * 0.00002;
-
-      // обновляем не чаще ~30fps
-      if (ts % 33 < 16) {
-        setPhase(phaseRef.current);
+      if (!last) last = ts;
+      const dt = Math.min(40, ts - last);
+      last = ts;
+      offset = (offset + dt * SPEED) % stripPx;
+      if (stripRef.current) {
+        stripRef.current.style.transform = `translateX(-${offset}px)`;
       }
-      rafRef.current = requestAnimationFrame(tick);
+      raf = requestAnimationFrame(tick);
     }
 
-    rafRef.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafRef.current);
-  }, [items.length]);
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [singleStrip.length, stripPx]);
 
   if (!baseItems.length) return null;
 
   const pages = chunk(baseItems, 4);
   const pageCount = pages.length || 1;
 
-  const count = items.length;
-  const step = (Math.PI * 2) / count;
-  const radiusX = 420; // шире «рамка» и сильнее выпуклость
-  const radiusZ = 1;
+  const displayItems = [...singleStrip, ...singleStrip];
 
   return (
     <>
-      {/* Mobile: пролистываемая галерея 2×2 (по 4 логотипа на “страницу”) */}
+      {/* Mobile: swipeable 2×2 grid pages */}
       <div className="md:hidden">
         <div
           className="relative overflow-hidden"
@@ -107,8 +131,8 @@ export function PartnersCarousel({ partners }) {
             {pages.map((page, pageIdx) => (
               <div key={pageIdx} className="w-full shrink-0">
                 <div className="grid grid-cols-2 gap-3">
-                  {page.map((p) => {
-                    const inner = (
+                  {page.map((p) => (
+                    <div key={p.id}>
                       <div className="flex aspect-square items-center justify-center rounded-2xl border border-black/10 bg-white shadow-sm">
                         <img
                           src={p.logoUrl}
@@ -117,22 +141,8 @@ export function PartnersCarousel({ partners }) {
                           loading="lazy"
                         />
                       </div>
-                    );
-                    return p.href ? (
-                      <a
-                        key={p.id}
-                        href={p.href}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-black/20"
-                        aria-label={p.name ? `Партнёр: ${p.name}` : "Партнёр"}
-                      >
-                        {inner}
-                      </a>
-                    ) : (
-                      <div key={p.id}>{inner}</div>
-                    );
-                  })}
+                    </div>
+                  ))}
                 </div>
               </div>
             ))}
@@ -161,75 +171,25 @@ export function PartnersCarousel({ partners }) {
         ) : null}
       </div>
 
-      {/* Desktop: 3D “выпуклая” карусель */}
-      <div className="relative hidden h-[160px] w-full overflow-hidden md:block">
-        {/* мягкая виньетка по бокам */}
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-24 bg-linear-to-r from-[#e8f4e8] to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-linear-to-l from-[#e8f4e8] to-transparent" />
+      {/* Desktop: infinite conveyor belt with ring-like depth at edges */}
+      <div className="relative hidden h-[120px] w-full overflow-hidden md:block">
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-36 bg-linear-to-r from-[#e8f4e8] via-[#e8f4e8]/70 to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-36 bg-linear-to-l from-[#e8f4e8] via-[#e8f4e8]/70 to-transparent" />
 
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="relative h-[136px] w-full max-w-[1240px]">
-            {items.map((p, i) => {
-              const a = phase + i * step;
-              const x = Math.sin(a) * radiusX;
-              const z = Math.cos(a) * radiusZ; // -1..1
-
-              const t = (z + 1) / 2; // 0..1
-              const scale = 0.55 + t * 0.6; // 0.55..1.15
-              const opacity = 0.18 + t * 0.82;
-              const blur = (1 - t) * 1.1;
-              const y = (1 - t) * 10;
-              const zIndex = Math.round(t * 1000);
-
-              const style = {
-                transform: `translateX(${sig(x)}px) translateY(${sig(y)}px) scale(${sig(scale)})`,
-                opacity: sig(opacity),
-                filter: blur ? `blur(${sig(blur)}px)` : undefined,
-                zIndex: String(zIndex),
-              };
-
-              const content = (
-                <div
-                  className={cn(
-                    "flex h-[84px] w-[220px] items-center justify-center rounded-2xl border border-black/10 bg-white shadow-[0_10px_30px_rgba(2,6,23,0.08)]",
-                    "transition-[transform,opacity,filter] duration-200"
-                  )}
-                >
-                  <img
-                    src={p.logoUrl}
-                    alt={p.name || "Партнёр"}
-                    className="max-h-[46px] max-w-[170px] object-contain"
-                    loading="lazy"
-                  />
-                </div>
-              );
-
-              return (
-                <div
-                  key={`${p.id}-${i}`}
-                  className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-                  style={style}
-                >
-                  {p.href ? (
-                    <a
-                      href={p.href}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-black/20"
-                      aria-label={p.name ? `Партнёр: ${p.name}` : "Партнёр"}
-                    >
-                      {content}
-                    </a>
-                  ) : (
-                    content
-                  )}
-                </div>
-              );
-            })}
+        <div className="flex h-full items-center">
+          <div ref={stripRef} className="flex items-center will-change-transform">
+            {displayItems.map((p, i) => (
+              <div
+                key={`${p.id}-d-${i}`}
+                className="shrink-0"
+                style={{ width: CARD_W, marginRight: GAP }}
+              >
+                <LogoCard partner={p} />
+              </div>
+            ))}
           </div>
         </div>
       </div>
     </>
   );
 }
-

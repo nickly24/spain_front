@@ -43,11 +43,17 @@ export async function POST(req) {
   await fs.writeFile(filePath, buffer);
 
   if (kind === "hero" && pageSlug) {
-    await prisma.heroBanner.upsert({
-      where: { pageSlug },
-      update: { imageUrl: publicPath },
-      create: { pageSlug, imageUrl: publicPath },
-    });
+    const existing = await prisma.heroBanner.findFirst({ where: { pageSlug } });
+    if (existing) {
+      await prisma.heroBanner.update({
+        where: { id: existing.id },
+        data: { imageUrl: publicPath },
+      });
+    } else {
+      await prisma.heroBanner.create({
+        data: { pageSlug, imageUrl: publicPath },
+      });
+    }
   }
 
   return NextResponse.json({ url: publicPath });

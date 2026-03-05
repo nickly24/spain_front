@@ -1,6 +1,8 @@
 import { notFound, redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { prisma } from "../../../../lib/prisma";
 import { Button } from "@/components/ui/button";
+import { DeleteButton } from "@/components/FormWithPending";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,7 +34,33 @@ async function saveNews(formData) {
     },
   });
 
-  redirect(`/admin/news/${id}`);
+  revalidatePath("/", "layout");
+  redirect(`/admin/news/${id}?message=${encodeURIComponent("Публикация сохранена")}&type=success`);
+}
+
+async function deleteNews(formData) {
+  "use server";
+
+  const id = Number(formData.get("id"));
+  if (!id) return;
+
+  let success = false;
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.newsPostTranslation.deleteMany({ where: { postId: id } });
+      await tx.newsPost.delete({ where: { id } });
+    });
+    success = true;
+  } catch (error) {
+    console.error("Failed to delete news:", error);
+  }
+
+  if (!success) {
+    redirect(`/admin/news/${id}?message=${encodeURIComponent("Ошибка при удалении публикации")}&type=error`);
+  }
+
+  revalidatePath("/", "layout");
+  redirect("/admin/news");
 }
 
 export default async function AdminNewsEditPage({ params }) {
@@ -119,11 +147,18 @@ export default async function AdminNewsEditPage({ params }) {
         </Card>
 
         <div className="flex flex-col-reverse items-start justify-between gap-3 sm:flex-row sm:items-center">
-          <Button asChild variant="link" className="px-0">
-            <a href={`/news/${post.slug}`}>Открыть статью на сайте</a>
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button asChild variant="link" className="px-0">
+              <a href={`/news/${post.slug}`}>Открыть статью на сайте</a>
+            </Button>
+          </div>
           <Button type="submit">Сохранить изменения</Button>
         </div>
+      </form>
+
+      <form action={deleteNews} className="flex justify-start">
+        <input type="hidden" name="id" value={post.id} />
+        <DeleteButton size="sm">Удалить публикацию</DeleteButton>
       </form>
     </div>
   );

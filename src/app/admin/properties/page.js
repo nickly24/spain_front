@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { prisma } from "../../../lib/prisma";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,9 +16,24 @@ async function deleteProperty(formData) {
   const id = Number(formData.get("id"));
   if (!id) return;
 
-  await prisma.propertyImage.deleteMany({ where: { propertyId: id } });
-  await prisma.property.delete({ where: { id } });
+  let success = false;
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.propertyImage.deleteMany({ where: { propertyId: id } });
+      await tx.propertyTag.deleteMany({ where: { propertyId: id } });
+      await tx.propertyTranslation.deleteMany({ where: { propertyId: id } });
+      await tx.property.delete({ where: { id } });
+    });
+    success = true;
+  } catch (error) {
+    console.error("Failed to delete property:", error);
+  }
 
+  if (!success) {
+    redirect(`/admin/properties?message=${encodeURIComponent("Ошибка при удалении объекта")}&type=error`);
+  }
+
+  revalidatePath("/", "layout");
   redirect("/admin/properties");
 }
 

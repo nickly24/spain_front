@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import Link from "next/link";
 import Image from "next/image";
 import path from "path";
@@ -54,6 +55,7 @@ async function updateProperty(formData) {
     .map((v) => Number(v))
     .filter((n) => Number.isFinite(n) && n > 0);
 
+  let success = false;
   try {
     await prisma.$transaction(async (tx) => {
       let cityLabelRu = "";
@@ -153,11 +155,17 @@ async function updateProperty(formData) {
         seoDescription: trSeoDescEs,
       });
     });
-
-    redirect(`/admin/properties/${id}?message=${encodeURIComponent("Объект успешно сохранён")}&type=success`);
+    success = true;
   } catch (error) {
-    redirect(`/admin/properties/${id}?message=${encodeURIComponent("Ошибка при сохранении")}&type=error`);
+    console.error("Failed to update property:", error);
   }
+
+  revalidatePath("/", "layout");
+  redirect(
+    `/admin/properties/${id}?message=${encodeURIComponent(
+      success ? "Объект успешно сохранён" : "Ошибка при сохранении",
+    )}&type=${success ? "success" : "error"}`,
+  );
 }
 
 async function deleteProperty(formData) {
@@ -166,9 +174,24 @@ async function deleteProperty(formData) {
   const id = Number(formData.get("id"));
   if (!id) return;
 
-  await prisma.propertyImage.deleteMany({ where: { propertyId: id } });
-  await prisma.property.delete({ where: { id } });
+  let success = false;
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.propertyImage.deleteMany({ where: { propertyId: id } });
+      await tx.propertyTag.deleteMany({ where: { propertyId: id } });
+      await tx.propertyTranslation.deleteMany({ where: { propertyId: id } });
+      await tx.property.delete({ where: { id } });
+    });
+    success = true;
+  } catch (error) {
+    console.error("Failed to delete property:", error);
+  }
 
+  if (!success) {
+    redirect(`/admin/properties/${id}?message=${encodeURIComponent("Ошибка при удалении объекта")}&type=error`);
+  }
+
+  revalidatePath("/", "layout");
   redirect("/admin/properties");
 }
 
@@ -185,6 +208,7 @@ async function addImage(formData) {
     redirect(`/admin/properties/${propertyId}?message=${encodeURIComponent("Файл не выбран")}&type=error`);
   }
 
+  let success = false;
   try {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
@@ -223,35 +247,17 @@ async function addImage(formData) {
         isMain: !hasMain,
       },
     });
-
-    redirect(
-      `/admin/properties/${propertyId}?message=${encodeURIComponent(
-        "Фото добавлено",
-      )}&type=success`,
-    );
+    success = true;
   } catch (error) {
-    // Если ошибка произошла уже после создания записи, не пугаем пользователя ложной ошибкой.
-    try {
-      const anyImage = await prisma.propertyImage.findFirst({
-        where: { propertyId },
-      });
-      if (anyImage) {
-        redirect(
-          `/admin/properties/${propertyId}?message=${encodeURIComponent(
-            "Фото добавлено",
-          )}&type=success`,
-        );
-      }
-    } catch {
-      // ignore secondary errors
-    }
-
-    redirect(
-      `/admin/properties/${propertyId}?message=${encodeURIComponent(
-        "Ошибка при загрузке фото",
-      )}&type=error`,
-    );
+    console.error("Failed to add image:", error);
   }
+
+  revalidatePath("/", "layout");
+  redirect(
+    `/admin/properties/${propertyId}?message=${encodeURIComponent(
+      success ? "Фото добавлено" : "Ошибка при загрузке фото",
+    )}&type=${success ? "success" : "error"}`,
+  );
 }
 
 async function setMainImage(formData) {
@@ -261,6 +267,7 @@ async function setMainImage(formData) {
   const imageId = Number(formData.get("imageId"));
   if (!propertyId || !imageId) return;
 
+  let success = false;
   try {
     await prisma.propertyImage.updateMany({
       where: { propertyId },
@@ -271,11 +278,17 @@ async function setMainImage(formData) {
       where: { id: imageId },
       data: { isMain: true },
     });
-
-    redirect(`/admin/properties/${propertyId}?message=${encodeURIComponent("Главное фото изменено")}&type=success`);
+    success = true;
   } catch (error) {
-    redirect(`/admin/properties/${propertyId}?message=${encodeURIComponent("Ошибка при изменении главного фото")}&type=error`);
+    console.error("Failed to set main image:", error);
   }
+
+  revalidatePath("/", "layout");
+  redirect(
+    `/admin/properties/${propertyId}?message=${encodeURIComponent(
+      success ? "Главное фото изменено" : "Ошибка при изменении главного фото",
+    )}&type=${success ? "success" : "error"}`,
+  );
 }
 
 async function deleteImage(formData) {
@@ -285,6 +298,7 @@ async function deleteImage(formData) {
   const imageId = Number(formData.get("imageId"));
   if (!propertyId || !imageId) return;
 
+  let success = false;
   try {
     const image = await prisma.propertyImage.findUnique({ where: { id: imageId } });
     if (image?.url) {
@@ -298,11 +312,17 @@ async function deleteImage(formData) {
     }
 
     await prisma.propertyImage.delete({ where: { id: imageId } });
-
-    redirect(`/admin/properties/${propertyId}?message=${encodeURIComponent("Фото удалено")}&type=success`);
+    success = true;
   } catch (error) {
-    redirect(`/admin/properties/${propertyId}?message=${encodeURIComponent("Ошибка при удалении фото")}&type=error`);
+    console.error("Failed to delete image:", error);
   }
+
+  revalidatePath("/", "layout");
+  redirect(
+    `/admin/properties/${propertyId}?message=${encodeURIComponent(
+      success ? "Фото удалено" : "Ошибка при удалении фото",
+    )}&type=${success ? "success" : "error"}`,
+  );
 }
 
 export default async function AdminPropertyEditPage({ params }) {

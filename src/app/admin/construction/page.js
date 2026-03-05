@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import Link from "next/link";
 import { prisma } from "../../../lib/prisma";
 import { Button } from "@/components/ui/button";
@@ -33,9 +34,9 @@ async function saveStep(formData) {
     };
   }
 
+  let success = false;
   try {
     await prisma.$transaction(async (tx) => {
-      // base = RU fallback
       await tx.constructionStep.update({
         where: { id },
         data: {
@@ -54,10 +55,17 @@ async function saveStep(formData) {
         });
       }
     });
-    redirect(`/admin/construction?message=${encodeURIComponent("Этап сохранён")}&type=success`);
+    success = true;
   } catch (error) {
-    redirect(`/admin/construction?message=${encodeURIComponent("Ошибка при сохранении этапа")}&type=error`);
+    console.error("Failed to save step:", error);
   }
+
+  revalidatePath("/", "layout");
+  redirect(
+    `/admin/construction?message=${encodeURIComponent(
+      success ? "Этап сохранён" : "Ошибка при сохранении этапа"
+    )}&type=${success ? "success" : "error"}`
+  );
 }
 
 async function saveService(formData) {
@@ -76,6 +84,7 @@ async function saveService(formData) {
     };
   }
 
+  let success = false;
   try {
     await prisma.$transaction(async (tx) => {
       await tx.constructionService.update({
@@ -97,10 +106,17 @@ async function saveService(formData) {
         });
       }
     });
-    redirect(`/admin/construction?message=${encodeURIComponent("Услуга сохранена")}&type=success`);
+    success = true;
   } catch (error) {
-    redirect(`/admin/construction?message=${encodeURIComponent("Ошибка при сохранении услуги")}&type=error`);
+    console.error("Failed to save service:", error);
   }
+
+  revalidatePath("/", "layout");
+  redirect(
+    `/admin/construction?message=${encodeURIComponent(
+      success ? "Услуга сохранена" : "Ошибка при сохранении услуги"
+    )}&type=${success ? "success" : "error"}`
+  );
 }
 
 

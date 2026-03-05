@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { prisma } from "../../../lib/prisma";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +22,7 @@ async function saveSocial(formData) {
     create: { platform, url, sortOrder, visible },
   });
 
+  revalidatePath("/", "layout");
   redirect("/admin/social");
 }
 
@@ -29,6 +31,7 @@ async function deleteSocial(formData) {
   const platform = formData.get("platform")?.toString();
   if (!platform) return;
   await prisma.socialLink.delete({ where: { platform } }).catch(() => null);
+  revalidatePath("/", "layout");
   redirect("/admin/social");
 }
 

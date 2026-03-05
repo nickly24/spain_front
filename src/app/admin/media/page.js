@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { prisma } from "../../../lib/prisma";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,11 +16,20 @@ async function updateHeroImage(formData) {
 
   if (!pageSlug || !imageUrl) return;
 
-  await prisma.heroBanner.upsert({
-    where: { pageSlug },
-    update: { imageUrl },
-    create: { pageSlug, imageUrl },
-  });
+  const existing = await prisma.heroBanner.findFirst({ where: { pageSlug } });
+  if (existing) {
+    await prisma.heroBanner.update({
+      where: { id: existing.id },
+      data: { imageUrl },
+    });
+  } else {
+    await prisma.heroBanner.create({
+      data: { pageSlug, imageUrl },
+    });
+  }
+
+  revalidatePath("/", "layout");
+  redirect(`/admin/media?message=${encodeURIComponent("Баннер сохранён")}&type=success`);
 }
 
 export default async function AdminMediaPage() {

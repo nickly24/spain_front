@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { prisma } from "../../../lib/prisma";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -67,6 +69,9 @@ async function saveContact(formData) {
       });
     }
   });
+
+  revalidatePath("/", "layout");
+  redirect(`/admin/contacts?message=${encodeURIComponent("Контакт сохранён")}&type=success`);
 }
 
 export default async function AdminContactsPage() {

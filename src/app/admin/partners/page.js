@@ -1,6 +1,7 @@
 import path from "path";
 import { promises as fs } from "fs";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 
 import { Button } from "@/components/ui/button";
@@ -11,16 +12,17 @@ import { Label } from "@/components/ui/label";
 export const dynamic = "force-dynamic";
 
 function safeFileName(input) {
-  return String(input || "logo")
+  const cleaned = String(input || "")
     .trim()
     .toLowerCase()
     .replace(/\s+/g, "_")
     .replace(/[^a-z0-9_-]/g, "")
     .slice(0, 48);
+  return cleaned || "logo";
 }
 
 async function savePartnerLogo(file, prefix = "partner") {
-  if (!file || typeof file === "string") return null;
+  if (!file || typeof file === "string" || file.size === 0) return null;
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
 
@@ -64,6 +66,7 @@ async function createPartner(formData) {
     data: { name, href, logoUrl, sortOrder, visible },
   });
 
+  revalidatePath("/", "layout");
   redirect("/admin/partners");
 }
 
@@ -94,6 +97,7 @@ async function updatePartner(formData) {
     data: { name, href, sortOrder, visible, logoUrl },
   });
 
+  revalidatePath("/", "layout");
   redirect("/admin/partners");
 }
 
@@ -106,6 +110,7 @@ async function deletePartner(formData) {
   if (row?.logoUrl) await deleteLocalIfPossible(row.logoUrl);
 
   await prisma.partner.delete({ where: { id } });
+  revalidatePath("/", "layout");
   redirect("/admin/partners");
 }
 

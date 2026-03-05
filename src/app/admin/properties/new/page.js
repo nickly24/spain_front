@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import path from "path";
 import { promises as fs } from "fs";
 import { prisma } from "../../../../lib/prisma";
@@ -9,7 +10,7 @@ async function createProperty(formData) {
 
   const title = formData.get("title")?.toString() || "";
   const slug = formData.get("slug")?.toString() || "";
-  const city = formData.get("city")?.toString() || "";
+  const cityId = Number(formData.get("cityId") || 0) || null;
   const listingType = formData.get("listingType")?.toString() === "rent" ? "rent" : "sale";
   const bedrooms = Number(formData.get("bedrooms") || 0);
   const areaM2 = Number(formData.get("areaM2") || 0);
@@ -22,11 +23,26 @@ async function createProperty(formData) {
   const views = Number(formData.get("views") || 0);
   const rating = Number(formData.get("rating") || 0);
 
+  let cityLabelRu = "";
+  if (cityId) {
+    const cityRow = await prisma.city.findUnique({
+      where: { id: cityId },
+      include: { translations: true },
+    });
+    if (cityRow?.translations) {
+      cityLabelRu =
+        cityRow.translations.find((t) => t.locale === "ru")?.label ||
+        cityRow.translations[0]?.label ||
+        "";
+    }
+  }
+
   const created = await prisma.property.create({
     data: {
       title,
       slug,
-      city,
+      city: cityLabelRu,
+      cityId,
       listingType,
       bedrooms,
       areaM2,
@@ -77,10 +93,25 @@ async function createProperty(formData) {
     }
   }
 
+  revalidatePath("/", "layout");
   redirect(`/admin/properties/${created.id}`);
 }
 
-export default function AdminPropertyCreatePage() {
+export default async function AdminPropertyCreatePage() {
+  const cities = await prisma.city.findMany({
+    where: { visible: true },
+    orderBy: [{ sortOrder: "asc" }, { id: "asc" }],
+    include: { translations: true },
+  });
+
+  const cityOptions = cities.map((c) => {
+    const ru =
+      c.translations.find((t) => t.locale === "ru")?.label ||
+      c.translations[0]?.label ||
+      c.key;
+    return { id: c.id, label: ru };
+  });
+
   return (
     <div className="space-y-6">
       <div>
@@ -91,7 +122,7 @@ export default function AdminPropertyCreatePage() {
         </p>
       </div>
 
-      <CreatePropertyForm createProperty={createProperty} />
+      <CreatePropertyForm createProperty={createProperty} cities={cityOptions} />
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import Link from "next/link";
 import { prisma } from "../../../../lib/prisma";
 import { getPageFields } from "../fieldsConfig";
@@ -91,6 +92,7 @@ async function savePage(formData) {
     }
   });
 
+  revalidatePath("/", "layout");
   redirect(`/admin/pages/${slug}?lang=${locale}`);
 }
 

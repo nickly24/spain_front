@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { prisma } from "../../../lib/prisma";
 import { defaultBadgeTranslations, normalizeTagKey, pickTranslatedLabel } from "../../../lib/tags";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,7 @@ async function createTag(formData) {
     },
   });
 
+  revalidatePath("/", "layout");
   redirect(`/admin/tags#tag-${created.id}`);
 }
 
@@ -88,6 +90,7 @@ async function updateTag(formData) {
     }
   });
 
+  revalidatePath("/", "layout");
   redirect(`/admin/tags#tag-${id}`);
 }
 
@@ -97,6 +100,7 @@ async function deleteTag(formData) {
   const id = Number(formData.get("id"));
   if (!id) return;
   await prisma.tag.delete({ where: { id } });
+  revalidatePath("/", "layout");
   redirect("/admin/tags");
 }
 
@@ -156,6 +160,7 @@ async function importBadges() {
     }
   });
 
+  revalidatePath("/", "layout");
   redirect("/admin/tags");
 }
 

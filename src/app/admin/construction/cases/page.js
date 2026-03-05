@@ -1,6 +1,7 @@
 import path from "path";
 import { promises as fs } from "fs";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "../../../../lib/prisma";
@@ -41,7 +42,7 @@ function jsonArrayToLines(value) {
 }
 
 async function saveUploadedFile(file, prefix = "file") {
-  if (!file || typeof file === "string") return null;
+  if (!file || typeof file === "string" || file.size === 0) return null;
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
 
@@ -84,24 +85,24 @@ async function createCase(formData) {
     return;
   }
   
+  const beforeUrl = await saveUploadedFile(beforeFile, "case_new_before");
+  const afterUrl = await saveUploadedFile(afterFile, "case_new_after");
+
+  if (!beforeUrl || !afterUrl) {
+    redirect(`/admin/construction/cases?message=${encodeURIComponent("Ошибка при загрузке фото")}&type=error`);
+  }
+
+  const byLocale = {};
+  for (const loc of LOCALES) {
+    byLocale[loc.id] = {
+      title: (formData.get(`title_${loc.id}`)?.toString() || "").trim() || null,
+      was: linesToJsonArray(formData.get(`was_${loc.id}`)?.toString() || ""),
+      done: linesToJsonArray(formData.get(`done_${loc.id}`)?.toString() || ""),
+    };
+  }
+
+  let createdId = null;
   try {
-    const beforeUrl = await saveUploadedFile(beforeFile, "case_new_before");
-    const afterUrl = await saveUploadedFile(afterFile, "case_new_after");
-    
-    if (!beforeUrl || !afterUrl) {
-      redirect(`/admin/construction/cases?message=${encodeURIComponent("Ошибка при загрузке фото")}&type=error`);
-      return;
-    }
-
-    const byLocale = {};
-    for (const loc of LOCALES) {
-      byLocale[loc.id] = {
-        title: (formData.get(`title_${loc.id}`)?.toString() || "").trim() || null,
-        was: linesToJsonArray(formData.get(`was_${loc.id}`)?.toString() || ""),
-        done: linesToJsonArray(formData.get(`done_${loc.id}`)?.toString() || ""),
-      };
-    }
-
     const created = await prisma.constructionCase.create({
       data: {
         title: byLocale.ru.title || "Новый кейс",
@@ -121,11 +122,14 @@ async function createCase(formData) {
         },
       },
     });
-
-    redirect(`/admin/construction/cases?message=${encodeURIComponent("Кейс создан")}&type=success#case-${created.id}`);
+    createdId = created.id;
   } catch (error) {
+    console.error("Failed to create case:", error);
     redirect(`/admin/construction/cases?message=${encodeURIComponent("Ошибка при создании кейса")}&type=error`);
   }
+
+  revalidatePath("/", "layout");
+  redirect(`/admin/construction/cases?message=${encodeURIComponent("Кейс создан")}&type=success#case-${createdId}`);
 }
 
 async function saveCase(formData) {
@@ -138,35 +142,36 @@ async function saveCase(formData) {
   const beforeFile = formData.get("beforeFile");
   const afterFile = formData.get("afterFile");
   
+  let beforeUrl = currentBeforeUrl;
+  let afterUrl = currentAfterUrl;
+
+  if (beforeFile && typeof beforeFile !== "string" && beforeFile.size > 0) {
+    const newUrl = await saveUploadedFile(beforeFile, `case_${id}_before`);
+    if (newUrl) {
+      await deleteOldFile(currentBeforeUrl);
+      beforeUrl = newUrl;
+    }
+  }
+
+  if (afterFile && typeof afterFile !== "string" && afterFile.size > 0) {
+    const newUrl = await saveUploadedFile(afterFile, `case_${id}_after`);
+    if (newUrl) {
+      await deleteOldFile(currentAfterUrl);
+      afterUrl = newUrl;
+    }
+  }
+
+  const byLocale = {};
+  for (const loc of LOCALES) {
+    byLocale[loc.id] = {
+      title: (formData.get(`title_${loc.id}`)?.toString() || "").trim() || null,
+      was: linesToJsonArray(formData.get(`was_${loc.id}`)?.toString() || ""),
+      done: linesToJsonArray(formData.get(`done_${loc.id}`)?.toString() || ""),
+    };
+  }
+
+  let success = false;
   try {
-    let beforeUrl = currentBeforeUrl;
-    let afterUrl = currentAfterUrl;
-    
-    if (beforeFile && typeof beforeFile !== "string") {
-      const newUrl = await saveUploadedFile(beforeFile, `case_${id}_before`);
-      if (newUrl) {
-        await deleteOldFile(currentBeforeUrl);
-        beforeUrl = newUrl;
-      }
-    }
-    
-    if (afterFile && typeof afterFile !== "string") {
-      const newUrl = await saveUploadedFile(afterFile, `case_${id}_after`);
-      if (newUrl) {
-        await deleteOldFile(currentAfterUrl);
-        afterUrl = newUrl;
-      }
-    }
-
-    const byLocale = {};
-    for (const loc of LOCALES) {
-      byLocale[loc.id] = {
-        title: (formData.get(`title_${loc.id}`)?.toString() || "").trim() || null,
-        was: linesToJsonArray(formData.get(`was_${loc.id}`)?.toString() || ""),
-        done: linesToJsonArray(formData.get(`done_${loc.id}`)?.toString() || ""),
-      };
-    }
-
     await prisma.$transaction(async (tx) => {
       await tx.constructionCase.update({
         where: { id },
@@ -198,10 +203,17 @@ async function saveCase(formData) {
         });
       }
     });
-    redirect(`/admin/construction/cases?message=${encodeURIComponent("Кейс сохранён")}&type=success#case-${id}`);
+    success = true;
   } catch (error) {
-    redirect(`/admin/construction/cases?message=${encodeURIComponent("Ошибка при сохранении кейса")}&type=error#case-${id}`);
+    console.error("Failed to save case:", error);
   }
+
+  revalidatePath("/", "layout");
+  redirect(
+    `/admin/construction/cases?message=${encodeURIComponent(
+      success ? "Кейс сохранён" : "Ошибка при сохранении кейса"
+    )}&type=${success ? "success" : "error"}#case-${id}`
+  );
 }
 
 async function deleteCase(formData) {
@@ -209,18 +221,26 @@ async function deleteCase(formData) {
   const id = Number(formData.get("id"));
   if (!id) return;
   
+  let success = false;
   try {
     const caseData = await prisma.constructionCase.findUnique({ where: { id } });
     if (caseData) {
       await deleteOldFile(caseData.beforeUrl);
       await deleteOldFile(caseData.afterUrl);
     }
-    
+
     await prisma.constructionCase.delete({ where: { id } });
-    redirect(`/admin/construction/cases?message=${encodeURIComponent("Кейс удалён")}&type=success`);
+    success = true;
   } catch (error) {
-    redirect(`/admin/construction/cases?message=${encodeURIComponent("Ошибка при удалении кейса")}&type=error`);
+    console.error("Failed to delete case:", error);
   }
+
+  revalidatePath("/", "layout");
+  redirect(
+    `/admin/construction/cases?message=${encodeURIComponent(
+      success ? "Кейс удалён" : "Ошибка при удалении кейса"
+    )}&type=${success ? "success" : "error"}`
+  );
 }
 
 export default async function AdminConstructionCasesPage() {

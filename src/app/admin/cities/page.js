@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { prisma } from "../../../lib/prisma";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -52,6 +53,7 @@ async function createCity(formData) {
     },
   });
 
+  revalidatePath("/", "layout");
   redirect(`/admin/cities#city-${created.id}`);
 }
 
@@ -83,6 +85,7 @@ async function updateCity(formData) {
     }
   });
 
+  revalidatePath("/", "layout");
   redirect(`/admin/cities#city-${id}`);
 }
 
@@ -91,6 +94,7 @@ async function deleteCity(formData) {
   const id = Number(formData.get("id"));
   if (!id) return;
   await prisma.city.delete({ where: { id } });
+  revalidatePath("/", "layout");
   redirect("/admin/cities");
 }
 
@@ -146,6 +150,7 @@ async function importFromProperties() {
     }
   });
 
+  revalidatePath("/", "layout");
   redirect("/admin/cities");
 }
 

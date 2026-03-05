@@ -103,7 +103,6 @@ model Property {
   sortOrder          Int              @default(0)
   views              Int              @default(0)
   rating             Float            @default(0)
-  sortOrder          Int              @default(0)
   seoTitle           String?          @db.VarChar(255)
   seoDescription     String?          @db.VarChar(512)
   badges             Json?
@@ -173,7 +172,7 @@ model NewsPost {
   slug           String     @unique
   title          String
   excerpt        String?
-  content        String     // markdown or rich-text JSON as string
+  content        String     @db.Text
   coverUrl       String?
   status         PostStatus @default(draft)
   publishedAt    DateTime?
@@ -189,7 +188,7 @@ model ConstructionStep {
   id        Int      @id @default(autoincrement())
   order     Int
   title     String
-  text      String
+  text      String   @db.Text
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -201,7 +200,7 @@ model ConstructionStepTranslation {
   stepId    Int
   locale    Locale
   title     String
-  text      String
+  text      String   @db.Text
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -247,7 +246,7 @@ model ConstructionCaseTranslation {
 model ConstructionService {
   id        Int      @id @default(autoincrement())
   title     String
-  text      String
+  text      String   @db.Text
   iconUrl   String?
   sortOrder Int      @default(0)
   createdAt DateTime @default(now())
@@ -261,7 +260,7 @@ model ConstructionServiceTranslation {
   serviceId Int
   locale    Locale
   title     String
-  text      String
+  text      String   @db.Text
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -377,7 +376,7 @@ model NewsPostTranslation {
   locale         Locale
   title          String
   excerpt        String?
-  content        String
+  content        String   @db.Text
   seoTitle       String?  @db.VarChar(255)
   seoDescription String?  @db.VarChar(512)
 
@@ -400,7 +399,7 @@ model PageContent {
 
 model HeroBanner {
   id        Int      @id @default(autoincrement())
-  pageSlug  String
+  pageSlug  String   @unique
   imageUrl  String
   title     String?
   subtitle  String?

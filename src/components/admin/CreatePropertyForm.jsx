@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CreatePropertyImagePicker } from "./CreatePropertyImagePicker";
 
-export function CreatePropertyForm({ createProperty }) {
+export function CreatePropertyForm({ createProperty, cities = [] }) {
   const [files, setFiles] = useState([]);
   const [isPending, setIsPending] = useTransition();
 
@@ -57,7 +57,18 @@ export function CreatePropertyForm({ createProperty }) {
               </div>
               <div className="space-y-2">
                 <Label>Город</Label>
-                <Input name="city" />
+                <select
+                  name="cityId"
+                  defaultValue=""
+                  className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <option value="">Не выбрано</option>
+                  {cities.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.label}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div className="space-y-2">
