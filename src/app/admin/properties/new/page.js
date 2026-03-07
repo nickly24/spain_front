@@ -8,8 +8,28 @@ async function createProperty(formData) {
   "use server";
 
   const title = formData.get("title")?.toString() || "";
-  const slug = formData.get("slug")?.toString() || "";
+  let slug = (formData.get("slug")?.toString() || "").trim();
   const cityId = Number(formData.get("cityId") || 0) || null;
+
+  function slugify(s) {
+    return String(s)
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 100) || "obekt";
+  }
+
+  if (!slug) slug = slugify(title);
+
+  let uniqueSlug = slug;
+  let suffix = 1;
+  while (await prisma.property.findUnique({ where: { slug: uniqueSlug } })) {
+    uniqueSlug = `${slug}-${suffix++}`;
+  }
+  slug = uniqueSlug;
   const listingType = formData.get("listingType")?.toString() === "rent" ? "rent" : "sale";
   const bedrooms = Number(formData.get("bedrooms") || 0);
   const areaM2 = Number(formData.get("areaM2") || 0);

@@ -25,11 +25,11 @@ const SPEED = 0.035;
 
 function LogoCard({ partner }) {
   const inner = (
-    <div className="flex h-[84px] w-[200px] items-center justify-center rounded-2xl border border-black/10 bg-white shadow-[0_10px_30px_rgba(2,6,23,0.08)]">
+    <div className="flex h-[84px] w-[200px] items-center justify-center overflow-hidden rounded-2xl border border-black/10 bg-white shadow-[0_10px_30px_rgba(2,6,23,0.08)]">
       <img
         src={partner.logoUrl}
         alt={partner.name || "Партнёр"}
-        className="max-h-[46px] max-w-[170px] object-contain"
+        className="h-full w-full object-contain"
         loading="lazy"
       />
     </div>
@@ -133,11 +133,11 @@ export function PartnersCarousel({ partners }) {
                 <div className="grid grid-cols-2 gap-3">
                   {page.map((p) => (
                     <div key={p.id}>
-                      <div className="flex aspect-square items-center justify-center rounded-2xl border border-black/10 bg-white shadow-sm">
+                      <div className="flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm">
                         <img
                           src={p.logoUrl}
                           alt={p.name || "Партнёр"}
-                          className="max-h-[44px] max-w-[120px] object-contain"
+                          className="h-full w-full object-contain"
                           loading="lazy"
                         />
                       </div>
