@@ -22,17 +22,33 @@ async function saveNews(formData) {
   const dateStr = formData.get("publishedAt")?.toString() || "";
   const publishedAt = dateStr ? new Date(dateStr) : null;
 
-  await prisma.newsPost.update({
-    where: { id },
-    data: {
-      title,
-      slug,
-      excerpt,
-      content,
-      status,
-      publishedAt,
-    },
-  });
+  const trEn = {
+    title: formData.get("title_en")?.toString() || "",
+    excerpt: formData.get("excerpt_en")?.toString() || "",
+    content: formData.get("content_en")?.toString() || "",
+  };
+  const trEs = {
+    title: formData.get("title_es")?.toString() || "",
+    excerpt: formData.get("excerpt_es")?.toString() || "",
+    content: formData.get("content_es")?.toString() || "",
+  };
+
+  await prisma.$transaction([
+    prisma.newsPost.update({
+      where: { id },
+      data: { title, slug, excerpt, content, status, publishedAt },
+    }),
+    prisma.newsPostTranslation.upsert({
+      where: { postId_locale: { postId: id, locale: "en" } },
+      update: { title: trEn.title, excerpt: trEn.excerpt, content: trEn.content },
+      create: { postId: id, locale: "en", title: trEn.title || title, excerpt: trEn.excerpt || excerpt, content: trEn.content || content },
+    }),
+    prisma.newsPostTranslation.upsert({
+      where: { postId_locale: { postId: id, locale: "es" } },
+      update: { title: trEs.title, excerpt: trEs.excerpt, content: trEs.content },
+      create: { postId: id, locale: "es", title: trEs.title || title, excerpt: trEs.excerpt || excerpt, content: trEs.content || content },
+    }),
+  ]);
 
   revalidatePath("/", "layout");
   redirect(`/admin/news/${id}?message=${encodeURIComponent("Публикация сохранена")}&type=success`);
@@ -68,8 +84,14 @@ export default async function AdminNewsEditPage({ params }) {
   const id = Number(resolvedParams?.id);
   if (!id) return notFound();
 
-  const post = await prisma.newsPost.findUnique({ where: { id } });
+  const post = await prisma.newsPost.findUnique({
+    where: { id },
+    include: { translations: true },
+  });
   if (!post) return notFound();
+
+  const trEn = post.translations?.find((t) => t.locale === "en") || null;
+  const trEs = post.translations?.find((t) => t.locale === "es") || null;
 
   const dateValue = post.publishedAt
     ? new Date(post.publishedAt).toISOString().slice(0, 10)
@@ -93,23 +115,15 @@ export default async function AdminNewsEditPage({ params }) {
 
         <Card>
           <CardHeader>
-            <CardTitle>Параметры</CardTitle>
-            <CardDescription>Заголовок, URL и состояние публикации.</CardDescription>
+            <CardTitle>Общие параметры</CardTitle>
+            <CardDescription>Slug (URL) и состояние публикации — общие для всех языков.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
               <div className="space-y-4 lg:col-span-2">
                 <div className="space-y-2">
-                  <Label>Заголовок</Label>
-                  <Input name="title" defaultValue={post.title} />
-                </div>
-                <div className="space-y-2">
                   <Label>Slug (URL)</Label>
                   <Input name="slug" defaultValue={post.slug} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Краткое описание (excerpt)</Label>
-                  <Textarea name="excerpt" rows={3} defaultValue={post.excerpt || ""} />
                 </div>
               </div>
               <div className="space-y-4">
@@ -136,13 +150,64 @@ export default async function AdminNewsEditPage({ params }) {
 
         <Card>
           <CardHeader>
-            <CardTitle>Текст статьи</CardTitle>
-            <CardDescription>
-              Текст хранится единым полем, абзацы разделяются пустой строкой. В следующей итерации можно заменить на полноценный редактор.
-            </CardDescription>
+            <CardTitle>Русский (RU)</CardTitle>
+            <CardDescription>Заголовок и текст для русской версии.</CardDescription>
           </CardHeader>
-          <CardContent>
-            <Textarea name="content" rows={12} defaultValue={post.content || ""} />
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label>Заголовок</Label>
+              <Input name="title" defaultValue={post.title} />
+            </div>
+            <div className="space-y-2">
+              <Label>Краткое описание (excerpt)</Label>
+              <Textarea name="excerpt" rows={3} defaultValue={post.excerpt || ""} />
+            </div>
+            <div className="space-y-2">
+              <Label>Текст статьи</Label>
+              <Textarea name="content" rows={8} defaultValue={post.content || ""} />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>English (EN)</CardTitle>
+            <CardDescription>Заголовок и текст для английской версии.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label>Title</Label>
+              <Input name="title_en" defaultValue={trEn?.title || ""} />
+            </div>
+            <div className="space-y-2">
+              <Label>Excerpt</Label>
+              <Textarea name="excerpt_en" rows={3} defaultValue={trEn?.excerpt || ""} />
+            </div>
+            <div className="space-y-2">
+              <Label>Content</Label>
+              <Textarea name="content_en" rows={8} defaultValue={trEn?.content || ""} />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Español (ES)</CardTitle>
+            <CardDescription>Заголовок и текст для испанской версии.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label>Título</Label>
+              <Input name="title_es" defaultValue={trEs?.title || ""} />
+            </div>
+            <div className="space-y-2">
+              <Label>Extracto</Label>
+              <Textarea name="excerpt_es" rows={3} defaultValue={trEs?.excerpt || ""} />
+            </div>
+            <div className="space-y-2">
+              <Label>Contenido</Label>
+              <Textarea name="content_es" rows={8} defaultValue={trEs?.content || ""} />
+            </div>
           </CardContent>
         </Card>
 

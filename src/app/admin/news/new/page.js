@@ -18,6 +18,17 @@ async function createNews(formData) {
   const dateStr = formData.get("publishedAt")?.toString() || "";
   const publishedAt = dateStr ? new Date(dateStr) : null;
 
+  const trEn = {
+    title: formData.get("title_en")?.toString() || "",
+    excerpt: formData.get("excerpt_en")?.toString() || "",
+    content: formData.get("content_en")?.toString() || "",
+  };
+  const trEs = {
+    title: formData.get("title_es")?.toString() || "",
+    excerpt: formData.get("excerpt_es")?.toString() || "",
+    content: formData.get("content_es")?.toString() || "",
+  };
+
   const created = await prisma.newsPost.create({
     data: {
       title,
@@ -26,6 +37,12 @@ async function createNews(formData) {
       content,
       status,
       publishedAt,
+      translations: {
+        create: [
+          { locale: "en", title: trEn.title || title, excerpt: trEn.excerpt || excerpt, content: trEn.content || content },
+          { locale: "es", title: trEs.title || title, excerpt: trEs.excerpt || excerpt, content: trEs.content || content },
+        ],
+      },
     },
   });
 
@@ -50,23 +67,15 @@ export default function AdminNewsCreatePage() {
       <form action={createNews} className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>Параметры</CardTitle>
-            <CardDescription>Заголовок, URL и состояние публикации.</CardDescription>
+            <CardTitle>Общие параметры</CardTitle>
+            <CardDescription>Slug (URL) и состояние публикации — общие для всех языков.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
               <div className="space-y-4 lg:col-span-2">
                 <div className="space-y-2">
-                  <Label>Заголовок</Label>
-                  <Input name="title" />
-                </div>
-                <div className="space-y-2">
                   <Label>Slug (URL)</Label>
-                  <Input name="slug" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Краткое описание (excerpt)</Label>
-                  <Textarea name="excerpt" rows={3} />
+                  <Input name="slug" placeholder="novaya-statya" />
                 </div>
               </div>
               <div className="space-y-4">
@@ -93,10 +102,64 @@ export default function AdminNewsCreatePage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Текст статьи</CardTitle>
+            <CardTitle>Русский (RU)</CardTitle>
+            <CardDescription>Заголовок и текст для русской версии.</CardDescription>
           </CardHeader>
-          <CardContent>
-            <Textarea name="content" rows={12} />
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label>Заголовок</Label>
+              <Input name="title" />
+            </div>
+            <div className="space-y-2">
+              <Label>Краткое описание (excerpt)</Label>
+              <Textarea name="excerpt" rows={3} />
+            </div>
+            <div className="space-y-2">
+              <Label>Текст статьи</Label>
+              <Textarea name="content" rows={8} />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>English (EN)</CardTitle>
+            <CardDescription>Заголовок и текст для английской версии.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label>Title</Label>
+              <Input name="title_en" placeholder="Article title in English" />
+            </div>
+            <div className="space-y-2">
+              <Label>Excerpt</Label>
+              <Textarea name="excerpt_en" rows={3} placeholder="Short description in English" />
+            </div>
+            <div className="space-y-2">
+              <Label>Content</Label>
+              <Textarea name="content_en" rows={8} placeholder="Article text in English" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Español (ES)</CardTitle>
+            <CardDescription>Заголовок и текст для испанской версии.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label>Título</Label>
+              <Input name="title_es" placeholder="Título del artículo en español" />
+            </div>
+            <div className="space-y-2">
+              <Label>Extracto</Label>
+              <Textarea name="excerpt_es" rows={3} placeholder="Descripción breve en español" />
+            </div>
+            <div className="space-y-2">
+              <Label>Contenido</Label>
+              <Textarea name="content_es" rows={8} placeholder="Texto del artículo en español" />
+            </div>
           </CardContent>
         </Card>
 

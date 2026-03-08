@@ -1,11 +1,39 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { prisma } from "../../../lib/prisma";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Trash2 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
+
+async function deleteNews(formData) {
+  "use server";
+
+  const id = Number(formData.get("id"));
+  if (!id) return;
+
+  let success = false;
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.newsPostTranslation.deleteMany({ where: { postId: id } });
+      await tx.newsPost.delete({ where: { id } });
+    });
+    success = true;
+  } catch (error) {
+    console.error("Failed to delete news:", error);
+  }
+
+  if (!success) {
+    redirect(`/admin/news?message=${encodeURIComponent("Ошибка при удалении публикации")}&type=error`);
+  }
+
+  revalidatePath("/", "layout");
+  redirect("/admin/news");
+}
 
 export default async function AdminNewsPage() {
   const posts = await prisma.newsPost.findMany({
@@ -39,6 +67,7 @@ export default async function AdminNewsPage() {
                 <TableHead>Slug</TableHead>
                 <TableHead>Дата</TableHead>
                 <TableHead>Статус</TableHead>
+                <TableHead className="w-12" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -77,6 +106,20 @@ export default async function AdminNewsPage() {
                         ? "Черновик"
                         : "Архив"}
                     </Badge>
+                  </TableCell>
+                  <TableCell className="w-12">
+                    <form action={deleteNews}>
+                      <input type="hidden" name="id" value={p.id} />
+                      <Button
+                        type="submit"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                        title="Удалить публикацию"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </form>
                   </TableCell>
                 </TableRow>
               ))}
