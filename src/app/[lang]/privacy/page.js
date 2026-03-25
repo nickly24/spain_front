@@ -53,7 +53,7 @@ export default async function PrivacyPage({ params }) {
         imageSrc={hero?.imageUrl || "/photos/image copy 8.png"}
       />
 
-      <section className="bg-[#e8f4e8]">
+      <section className="bg-mg-mint">
         <Container className="py-12">
           <div className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
             <p className="text-sm leading-6 text-slate-600">{bodyText}</p>

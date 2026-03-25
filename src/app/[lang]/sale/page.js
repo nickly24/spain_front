@@ -94,7 +94,7 @@ export default async function SalePage({ params }) {
         imageSrc={hero?.imageUrl || "/photos/image.png"}
       />
 
-      <section className="bg-[#e8f4e8]">
+      <section className="bg-mg-mint">
         <Container className="py-12">
           <PropertyCatalog
             properties={propertiesWithLocale}

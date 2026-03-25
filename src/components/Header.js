@@ -70,6 +70,9 @@ function Icon({ children, className = "" }) {
   );
 }
 
+const iconDark =
+  "border-white/15 bg-white/5 text-white/85 hover:text-mg-gold hover:border-white/25";
+
 function BurgerIcon({ open, className }) {
   return (
     <span className={`inline-flex flex-col justify-center gap-1.5 ${className}`} aria-hidden>
@@ -168,32 +171,46 @@ const LOCALE_NAMES = {
   es: "Español",
 };
 
-function LanguagePicker({ pathname, lang, onOpenChange }) {
+function LanguagePicker({ pathname, lang, onOpenChange, variant = "light" }) {
   const [open, setOpen] = useState(false);
   const label = LOCALE_NAMES[lang] || "Русский";
   const setOpenSafe = (next) => {
     setOpen(next);
     onOpenChange?.(next);
   };
+  const isDark = variant === "dark";
   return (
     <div className="relative ml-2">
       <button
         type="button"
         onClick={() => setOpenSafe(!open)}
-        className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/60 px-3 py-1.5 text-[11px] font-semibold text-slate-700 shadow-sm hover:bg-white"
+        className={
+          isDark
+            ? "inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm hover:bg-white/15"
+            : "inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/60 px-3 py-1.5 text-[11px] font-semibold text-slate-700 shadow-sm hover:bg-white"
+        }
         aria-haspopup="menu"
         aria-expanded={open}
       >
         <Flag locale={lang} />
-        <span className="text-slate-900">{label}</span>
-        <svg viewBox="0 0 20 20" className={`size-4 text-slate-500 transition-transform ${open ? "rotate-180" : ""}`} fill="currentColor" aria-hidden>
+        <span className={isDark ? "text-white" : "text-slate-900"}>{label}</span>
+        <svg
+          viewBox="0 0 20 20"
+          className={`size-4 transition-transform ${open ? "rotate-180" : ""} ${isDark ? "text-white/70" : "text-slate-500"}`}
+          fill="currentColor"
+          aria-hidden
+        >
           <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.17l3.71-3.94a.75.75 0 0 1 1.08 1.04l-4.24 4.5a.75.75 0 0 1-1.08 0l-4.24-4.5a.75.75 0 0 1 .02-1.06Z" clipRule="evenodd" />
         </svg>
       </button>
 
       {open && (
         <div
-          className="absolute right-0 mt-2 w-44 overflow-hidden rounded-2xl border border-black/10 bg-white shadow-lg"
+          className={
+            isDark
+              ? "absolute right-0 z-20 mt-2 w-44 overflow-hidden rounded-2xl border border-white/15 bg-mg-forest shadow-lg"
+              : "absolute right-0 mt-2 w-44 overflow-hidden rounded-2xl border border-black/10 bg-white shadow-lg"
+          }
           role="menu"
         >
           {LOCALES.map((l) => (
@@ -202,13 +219,23 @@ function LanguagePicker({ pathname, lang, onOpenChange }) {
               href={pathForLocale(pathname, l)}
               onClick={() => setOpenSafe(false)}
               className={`flex items-center gap-2 px-3 py-2 text-xs font-semibold ${
-                l === lang ? "bg-[#7DC931]/10 text-slate-900" : "text-slate-700 hover:bg-black/3"
+                isDark
+                  ? l === lang
+                    ? "bg-white/10 text-white"
+                    : "text-white/85 hover:bg-white/5"
+                  : l === lang
+                    ? "bg-mg-teal/15 text-slate-900"
+                    : "text-slate-700 hover:bg-black/3"
               }`}
               role="menuitem"
             >
               <Flag locale={l} />
               <span className="flex-1">{LOCALE_NAMES[l] || l.toUpperCase()}</span>
-              {l === lang ? <span className="text-[#7DC931]">●</span> : <span className="text-slate-300">○</span>}
+              {l === lang ? (
+                <span className={isDark ? "text-mg-gold" : "text-mg-teal"}>●</span>
+              ) : (
+                <span className={isDark ? "text-white/30" : "text-slate-300"}>○</span>
+              )}
             </a>
           ))}
         </div>
@@ -257,7 +284,7 @@ function HeaderInner({ pathname, lang = "ru", headerLinks = [], topbarLinks = []
   }, [lang]);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-black/10 bg-[#e8f4e8]/95 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-mg-emerald/98 backdrop-blur-md shadow-sm shadow-black/10">
       {/* Top bar */}
       <div
         className={`relative z-10 hidden md:block transition-all duration-300 ease-out ${
@@ -265,7 +292,7 @@ function HeaderInner({ pathname, lang = "ru", headerLinks = [], topbarLinks = []
         } ${langMenuOpen ? "overflow-visible" : "overflow-hidden"}`}
       >
         <Container className="py-2">
-          <div className="flex items-center justify-between gap-6 text-xs text-white/70">
+          <div className="flex items-center justify-between gap-6 text-xs text-white/75">
             <div className="flex items-center gap-3">
               {(socials || []).map((s) => {
                 const url = s?.url;
@@ -288,31 +315,36 @@ function HeaderInner({ pathname, lang = "ru", headerLinks = [], topbarLinks = []
                 return (
                   <a
                     key={platform}
-                    className="hover:text-slate-900"
+                    className="hover:text-mg-gold"
                     href={url}
                     target="_blank"
                     rel="noreferrer"
                     aria-label={aria}
                   >
-                    <Icon>{icon}</Icon>
+                    <Icon className={iconDark}>{icon}</Icon>
                   </a>
                 );
               })}
-              <span className="ml-2 h-4 w-px bg-black/10" />
+              <span className="ml-2 h-4 w-px bg-white/15" />
               {topbar.slice(0, 2).map((l) => (
-                <a key={l.href} className="text-slate-600 hover:text-slate-900" href={l.href}>
+                <a key={l.href} className="text-white/80 hover:text-mg-gold" href={l.href}>
                   {l.label}
                 </a>
               ))}
             </div>
             <div className="flex items-center gap-3">
-              <span className="ml-2 h-4 w-px bg-black/10" />
+              <span className="ml-2 h-4 w-px bg-white/15" />
               {topbar.slice(2).map((l) => (
-                <a key={l.href} className="text-slate-600 hover:text-slate-900" href={l.href}>
+                <a key={l.href} className="text-white/80 hover:text-mg-gold" href={l.href}>
                   {l.label}
                 </a>
               ))}
-              <LanguagePicker pathname={pathname} lang={lang} onOpenChange={setLangMenuOpen} />
+              <LanguagePicker
+                pathname={pathname}
+                lang={lang}
+                onOpenChange={setLangMenuOpen}
+                variant="dark"
+              />
             </div>
           </div>
         </Container>
@@ -321,23 +353,26 @@ function HeaderInner({ pathname, lang = "ru", headerLinks = [], topbarLinks = []
       {/* Main bar */}
       <Container className="py-3">
         <div className="flex items-center justify-between gap-4">
-          <a href={homeHref} className="flex items-center shrink-0">
+          <a
+            href={homeHref}
+            className="flex h-14 shrink-0 items-center overflow-visible pr-2 pl-0 max-sm:h-12 max-sm:-ml-1 md:-ml-6 lg:-ml-10 xl:-ml-12"
+          >
             <Image
-              src="/logo.svg"
+              src="/mg-group-logo.svg"
               alt="MG Group"
-              width={110}
-              height={49}
-              className="h-10 w-auto"
+              width={1920}
+              height={1080}
+              className="block h-14 w-auto max-h-14 origin-left scale-[2.35] object-contain object-left max-sm:h-11 max-sm:max-h-11 max-sm:scale-[1.7]"
               priority
             />
           </a>
 
-          <nav className="hidden lg:flex items-center gap-1">
+          <nav className="hidden lg:flex items-center gap-0.5">
             {navLinks.map((l) => (
               <a
                 key={l.href}
                 href={l.href}
-                className="rounded-full px-4 py-2 text-base font-semibold text-slate-600 hover:text-slate-900 hover:bg-black/3"
+                className="rounded-full px-3.5 py-2 text-sm font-semibold text-white/90 transition-colors hover:bg-white/10 hover:text-mg-gold"
               >
                 {l.label}
               </a>
@@ -346,34 +381,34 @@ function HeaderInner({ pathname, lang = "ru", headerLinks = [], topbarLinks = []
 
           <div className="flex items-center gap-2">
             <a
-              className="hidden sm:inline-flex items-center justify-center rounded-full bg-[#7DC931] px-4 py-2 text-sm font-semibold text-white hover:bg-[#6bb428]"
+              className="hidden sm:inline-flex items-center justify-center rounded-full bg-mg-gold px-4 py-2 text-sm font-semibold text-mg-ink shadow-sm transition-colors hover:bg-mg-gold-hover"
               href={telHref}
             >
               {phone}
             </a>
             <button
               type="button"
-              className="lg:hidden inline-flex size-11 items-center justify-center rounded-[5px] border border-[#ff6a3d] bg-[#ff6a3d] text-white shadow-sm hover:bg-[#ff5a2b]"
+              className="lg:hidden inline-flex size-11 items-center justify-center rounded-xl border border-white/15 bg-mg-gold text-mg-ink shadow-sm transition-colors hover:bg-mg-gold-hover"
               aria-label={open ? ui.header.closeMenu : ui.header.openMenu}
               aria-expanded={open}
               onClick={() => setOpen((v) => !v)}
             >
-              <BurgerIcon open={open} className="text-white" />
+              <BurgerIcon open={open} className="text-mg-ink" />
             </button>
           </div>
         </div>
       </Container>
 
       {open && (
-        <div className="lg:hidden border-t border-black/10 bg-[#e8f4e8]">
+        <div className="lg:hidden border-t border-white/10 bg-mg-forest">
           <Container className="py-4">
             <a
               href={telHref}
-              className="mb-3 flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-slate-900 hover:bg-black/3"
+              className="mb-3 flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white hover:bg-white/5"
               onClick={() => setOpen(false)}
             >
               <svg
-                className="size-4 shrink-0 text-[#ff6a3d]"
+                className="size-4 shrink-0 text-mg-gold"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -397,8 +432,8 @@ function HeaderInner({ pathname, lang = "ru", headerLinks = [], topbarLinks = []
                     onClick={() => setOpen(false)}
                     className={`inline-flex items-center justify-center rounded-full px-3 py-2 text-xs font-semibold ${
                       l === lang
-                        ? "bg-[#7DC931] text-white"
-                        : "border border-black/10 bg-white text-slate-700 hover:bg-black/3"
+                        ? "bg-mg-gold text-mg-ink"
+                        : "border border-white/15 bg-white/5 text-white/90 hover:bg-white/10"
                     }`}
                   >
                     <span className="mr-2">
@@ -412,7 +447,7 @@ function HeaderInner({ pathname, lang = "ru", headerLinks = [], topbarLinks = []
                 <a
                   key={l.href}
                   href={l.href}
-                  className="rounded-xl px-4 py-3 text-base font-semibold text-slate-700 hover:bg-black/3"
+                  className="rounded-xl px-4 py-3 text-base font-semibold text-white/90 hover:bg-white/5 hover:text-mg-gold"
                   onClick={() => setOpen(false)}
                 >
                   {l.label}

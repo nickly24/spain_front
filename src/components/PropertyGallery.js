@@ -72,7 +72,7 @@ export function PropertyGallery({ images, alt }) {
                 type="button"
                 onClick={() => setIdx(i)}
                 className={`relative h-16 w-24 shrink-0 overflow-hidden rounded-2xl border ${
-                  i === idx ? "border-[#ff6a3d]" : "border-black/10"
+                  i === idx ? "border-mg-gold" : "border-black/10"
                 }`}
                 aria-label={`Открыть фото ${i + 1}`}
               >

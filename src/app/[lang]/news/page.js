@@ -66,7 +66,7 @@ export default async function NewsPage({ params }) {
         imageSrc={hero?.imageUrl || "/photos/image copy 5.png"}
       />
 
-      <section className="bg-[#e8f4e8]">
+      <section className="bg-mg-mint">
         <Container className="py-12">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {posts.map((p) => {
@@ -82,13 +82,13 @@ export default async function NewsPage({ params }) {
                   <div className="text-xs text-slate-500">
                     {p.publishedAt ? new Date(p.publishedAt).toLocaleDateString(localeForDate) : null}
                   </div>
-                  <div className="mt-3 text-base font-semibold text-slate-900 group-hover:text-[#FF5A2B]">
+                  <div className="mt-3 text-base font-semibold text-slate-900 group-hover:text-mg-gold">
                     {title}
                   </div>
                   {excerpt ? (
                     <p className="mt-3 text-sm leading-6 text-slate-600">{excerpt}</p>
                   ) : null}
-                  <div className="mt-4 text-sm font-semibold text-[#FF5A2B] group-hover:text-[#ff4b17]">
+                  <div className="mt-4 text-sm font-semibold text-mg-gold group-hover:text-mg-gold-hover">
                     {readMore}
                   </div>
                 </a>

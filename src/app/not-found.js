@@ -6,7 +6,7 @@ export const metadata = {
 
 export default function NotFound() {
   return (
-    <div className="bg-[#e8f4e8]">
+    <div className="bg-mg-mint">
       <Container className="py-20">
         <div className="mx-auto max-w-xl rounded-3xl border border-black/10 bg-white p-8 text-center shadow-sm">
           <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -23,7 +23,7 @@ export default function NotFound() {
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
             <a
               href="/"
-              className="inline-flex items-center justify-center rounded-full bg-[#FF5A2B] px-6 py-3 text-sm font-semibold text-white hover:bg-[#ff4b17]"
+              className="inline-flex items-center justify-center rounded-full bg-mg-gold px-6 py-3 text-sm font-semibold text-mg-ink hover:bg-mg-gold-hover"
             >
               На главную
             </a>

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 
-const BRAND = "#FF5A2B";
+const BRAND = "#086b5e";
 
 export function CompanyHistory({ lang = "ru" }) {
   const T = {
@@ -10,85 +10,46 @@ export function CompanyHistory({ lang = "ru" }) {
       label: "История компании",
       items: [
         {
-          year: 2016,
-          title: "Начало пути",
-          text: "Запуск направления недвижимости в Испании. Формирование первых партнёрств и процессов подбора объектов.",
+          year: 2018,
+          title: "Два самостоятельных направления",
+          text: "С 2018 года формировались и развивались два самостоятельных направления: Marescol Properties — агентство недвижимости, специализирующееся на операциях купли-продажи на побережье Costa Blanca, и Guru Construction — строительная и дизайн-компания, реализующая проекты ремонта и интерьеров любой сложности.",
         },
         {
-          year: 2019,
-          title: "Рост каталога",
-          text: "Расширение географии и портфеля объектов. Упор на удобный отбор по городу, спальням и стоимости.",
-        },
-        {
-          year: 2022,
-          title: "Проекты и строительство",
-          text: "Запуск проектного направления: ремонт, реконструкция и задачи «под ключ» с понятными этапами.",
-        },
-        {
-          year: 2024,
-          title: "Системный сервис",
-          text: "Фокус на стандартах качества, скорости коммуникации и прозрачной логике сопровождения для клиентов.",
+          year: 2025,
+          title: "Единая структура MG Group",
+          text: "В 2025 году эти направления были объединены, что привело к созданию MG Group как единой структуры, способной предоставлять комплексные решения в сфере недвижимости.",
         },
       ],
-      socialTitle: "Социальная ответственность",
-      socialText:
-        "В проектах мы ориентируемся на качество среды: удобные планировки, безопасность, инфраструктуру и долговечные решения.",
     },
     en: {
       label: "Company history",
       items: [
         {
-          year: 2016,
-          title: "Getting started",
-          text: "Launching real estate services in Spain. Building the first partnerships and property selection workflows.",
+          year: 2018,
+          title: "Two independent lines of business",
+          text: "From 2018, two independent directions emerged and grew: Marescol Properties — a real estate agency focused on buy–sell transactions on the Costa Blanca, and Guru Construction — a construction and design company delivering renovation and interior projects of any complexity.",
         },
         {
-          year: 2019,
-          title: "Catalog growth",
-          text: "Expanding geography and portfolio. Focus on convenient filtering by city, bedrooms and price.",
-        },
-        {
-          year: 2022,
-          title: "Projects & construction",
-          text: "Launching the project direction: renovation, reconstruction and turnkey tasks with clear stages.",
-        },
-        {
-          year: 2024,
-          title: "System service",
-          text: "Focus on quality standards, fast communication and transparent support for clients.",
+          year: 2025,
+          title: "MG Group as one company",
+          text: "In 2025 these lines were brought together, creating MG Group as a single structure able to offer comprehensive real estate solutions end to end.",
         },
       ],
-      socialTitle: "Social responsibility",
-      socialText:
-        "In projects we focus on quality of the environment: comfortable layouts, safety, infrastructure and durable solutions.",
     },
     es: {
       label: "Historia de la empresa",
       items: [
         {
-          year: 2016,
-          title: "Inicio",
-          text: "Inicio de servicios inmobiliarios en España. Primeras alianzas y procesos de selección de inmuebles.",
+          year: 2018,
+          title: "Dos líneas independientes",
+          text: "Desde 2018 se fueron formando y desarrollando dos direcciones independientes: Marescol Properties — agencia inmobiliaria especializada en compraventa en la Costa Blanca, y Guru Construction — empresa de construcción y diseño que ejecuta proyectos de reforma e interiorismo de cualquier complejidad.",
         },
         {
-          year: 2019,
-          title: "Crecimiento del catálogo",
-          text: "Ampliación de la geografía y la cartera. Enfoque en filtros por ciudad, dormitorios y precio.",
-        },
-        {
-          year: 2022,
-          title: "Proyectos y construcción",
-          text: "Lanzamiento del área de proyectos: reforma, реконstrucción y trabajos «llave en mano» con etapas claras.",
-        },
-        {
-          year: 2024,
-          title: "Servicio sistemático",
-          text: "Enfoque en estándares de calidad, comunicación rápida y lógica transparente de acompañamiento.",
+          year: 2025,
+          title: "Unificación en MG Group",
+          text: "En 2025 estas direcciones se unieron, dando lugar a MG Group como estructura única capaz de ofrecer soluciones integrales en el sector inmobiliario.",
         },
       ],
-      socialTitle: "Responsabilidad social",
-      socialText:
-        "En proyectos nos enfocamos en la calidad del entorno: distribuciones cómodas, seguridad, infraestructura y soluciones duraderas.",
     },
   };
 
@@ -139,15 +100,6 @@ export function CompanyHistory({ lang = "ru" }) {
         <div className="lg:col-span-6">
           <div className="text-sm font-semibold text-slate-900">{current.title}</div>
           <p className="mt-2 text-sm leading-7 text-slate-600">{current.text}</p>
-
-          <div className="mt-8 border-t border-black/10 pt-6">
-            <div className="text-sm font-semibold text-slate-900">
-              {t.socialTitle}
-            </div>
-            <p className="mt-2 text-sm leading-7 text-slate-600">
-              {t.socialText}
-            </p>
-          </div>
         </div>
       </div>
     </section>

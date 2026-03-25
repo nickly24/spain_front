@@ -125,7 +125,7 @@ export default async function ContactsPage({ params }) {
         imageSrc={hero?.imageUrl || "/photos/image copy 7.png"}
       />
 
-      <section className="bg-[#e8f4e8]">
+      <section className="bg-mg-mint">
         <Container className="py-12">
           <div className="border border-black/10 bg-white p-6 shadow-sm sm:p-10">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
@@ -143,7 +143,7 @@ export default async function ContactsPage({ params }) {
             <div className="mt-8 border border-black/10">
               <div className="flex items-center gap-3 border-b border-black/10 px-6 py-4">
                 <svg
-                  className="size-5 text-[#7DC931]"
+                  className="size-5 text-mg-teal"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -161,7 +161,7 @@ export default async function ContactsPage({ params }) {
                 </div>
               </div>
 
-              <div className="divide-y divide-[#ff6a3d]/30">
+              <div className="divide-y divide-mg-teal/30">
                 {phoneContactsWithLocale.map((p) => {
                   const isPlaceholder =
                     p.phone.includes("…") || p.phone.includes("X") || p.phone.includes("х");
@@ -181,7 +181,7 @@ export default async function ContactsPage({ params }) {
                           {p.name}
                         </div>
                         {p.person ? (
-                          <div className="mt-1 text-xs font-semibold text-[#ff6a3d]">
+                          <div className="mt-1 text-xs font-semibold text-mg-gold">
                             {p.person}
                           </div>
                         ) : null}
@@ -189,7 +189,7 @@ export default async function ContactsPage({ params }) {
                       <div className="sm:col-span-8 sm:text-right">
                         {telHref ? (
                           <a
-                            className="inline-flex items-center gap-3 text-lg font-semibold tracking-tight text-slate-900 hover:text-[#FF5A2B]"
+                            className="inline-flex items-center gap-3 text-lg font-semibold tracking-tight text-slate-900 hover:text-mg-gold"
                             href={telHref}
                           >
                             {p.phone}
@@ -213,7 +213,7 @@ export default async function ContactsPage({ params }) {
 
             <div className="mt-8 grid grid-cols-1 gap-6 border-t border-black/10 pt-8 md:grid-cols-3">
               <div className="flex items-start gap-4">
-                <div className="grid size-11 shrink-0 place-items-center bg-[#7DC931] text-white">
+                <div className="grid size-11 shrink-0 place-items-center bg-mg-teal text-white">
                   <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
                   </svg>
@@ -223,7 +223,7 @@ export default async function ContactsPage({ params }) {
                     {emailBlockLabel}
                   </div>
                   <a
-                    className="mt-1 inline-block text-sm font-semibold text-slate-900 hover:text-[#FF5A2B]"
+                    className="mt-1 inline-block text-sm font-semibold text-slate-900 hover:text-mg-gold"
                     href={`mailto:${emailAddress}`}
                   >
                     {emailAddress}
@@ -232,7 +232,7 @@ export default async function ContactsPage({ params }) {
               </div>
 
               <div className="flex items-start gap-4">
-                <div className="grid size-11 shrink-0 place-items-center bg-[#7DC931] text-white">
+                <div className="grid size-11 shrink-0 place-items-center bg-mg-teal text-white">
                   <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 21s7-4.35 7-11a7 7 0 10-14 0c0 6.65 7 11 7 11z" />
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 10.5a2 2 0 100-4 2 2 0 000 4z" />
@@ -247,7 +247,7 @@ export default async function ContactsPage({ params }) {
               </div>
 
               <div className="flex items-start gap-4">
-                <div className="grid size-11 shrink-0 place-items-center bg-[#7DC931] text-white">
+                <div className="grid size-11 shrink-0 place-items-center bg-mg-teal text-white">
                   <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
                     <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />

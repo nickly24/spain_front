@@ -1,6 +1,5 @@
 import { PageHero } from "../../../components/PageHero";
 import { Container } from "../../../components/Container";
-import { CompanyNumbers } from "../../../components/CompanyNumbers";
 import { CompanyHistory } from "../../../components/CompanyHistory";
 import { prisma } from "../../../lib/prisma";
 import { getLocaleFromParams } from "../../../lib/i18n";
@@ -32,7 +31,7 @@ export default async function AboutPage({ params }) {
     contentMap.get("about.mainText") ||
     contentMap.get("__page_content__") ||
     page?.content ||
-    "Помогаем подобрать объекты под ваш запрос (город, спальни, стоимость), а также подключаем проектное направление, когда требуется ремонт или решение «под ключ». Ниже — визуальные блоки «в цифрах» и история в формате, который удобно показывать клиенту.";
+    "Помогаем подобрать объекты под ваш запрос (город, спальни, стоимость), а также подключаем проектное направление, когда требуется ремонт или решение «под ключ». Ниже — история компании в формате, который удобно показывать клиенту.";
 
   const pageTr = await prisma.page.findUnique({
     where: { slug: "about" },
@@ -70,7 +69,7 @@ export default async function AboutPage({ params }) {
         imageSrc={hero?.imageUrl || "/photos/image copy 3.png"}
       />
 
-      <section className="bg-[#e8f4e8]">
+      <section className="bg-mg-mint">
         <Container className="py-12">
           <div className="space-y-10">
             <section className="rounded-3xl border border-black/10 bg-white p-7 shadow-sm">
@@ -85,7 +84,6 @@ export default async function AboutPage({ params }) {
               </p>
             </section>
 
-            <CompanyNumbers lang={lang} />
             <CompanyHistory lang={lang} />
           </div>
         </Container>

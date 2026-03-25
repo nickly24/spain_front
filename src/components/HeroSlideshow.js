@@ -87,7 +87,7 @@ export function HeroSlideshow({ content = {} }) {
           >
             <span
               className={`block size-1.5 rounded-full transition-colors ${
-                i === index ? "bg-[#7DC931]" : "bg-white/50"
+                i === index ? "bg-mg-teal" : "bg-white/50"
               }`}
             />
           </button>
@@ -104,7 +104,7 @@ export function HeroSlideshow({ content = {} }) {
                   <span
                     className={
                       i === index
-                        ? "font-semibold text-[#7DC931]"
+                        ? "font-semibold text-mg-teal"
                         : ""
                     }
                   >
@@ -147,7 +147,7 @@ export function HeroSlideshow({ content = {} }) {
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
               <a
                 href={activeSlide.sectionHref}
-                className="inline-flex items-center justify-center rounded-full bg-[#ff6a3d] px-6 py-3 text-sm font-semibold text-white hover:bg-[#ff5a2b]"
+                className="inline-flex items-center justify-center rounded-full bg-mg-gold px-6 py-3 text-sm font-semibold text-mg-ink hover:bg-mg-gold-hover"
               >
                 {mainCta}
               </a>
@@ -172,7 +172,7 @@ export function HeroSlideshow({ content = {} }) {
                 >
                   <span
                     className={`block h-2 w-2 rounded-full transition-colors ${
-                      i === index ? "bg-[#7DC931]" : "bg-white/50"
+                      i === index ? "bg-mg-teal" : "bg-white/50"
                     }`}
                   />
                 </button>

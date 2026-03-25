@@ -1,9 +1,15 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Montserrat, Cormorant_Garamond, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
+  subsets: ["latin", "cyrillic"],
+});
+
+const displaySerif = Cormorant_Garamond({
+  variable: "--font-display-serif",
+  weight: ["600", "700"],
+  subsets: ["latin", "cyrillic"],
 });
 
 const geistMono = Geist_Mono({
@@ -30,7 +36,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="ru">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#e8f4e8] text-slate-900`}
+        className={`${montserrat.variable} ${displaySerif.variable} ${geistMono.variable} antialiased bg-mg-mint text-slate-900`}
       >
         {children}
       </body>

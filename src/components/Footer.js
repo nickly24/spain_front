@@ -43,34 +43,34 @@ export function Footer({ lang = "ru", footerLinks = [] }) {
   const privacyHref = `/${lang}/privacy`;
 
   return (
-    <footer className="border-t border-black/10 bg-[#e8f4e8]">
+    <footer className="border-t border-white/10 bg-mg-ink text-white/85">
       <Container className="py-12">
         <div className="grid grid-cols-1 gap-10 md:grid-cols-12">
           <div className="md:col-span-5">
-            <a href={homeHref} className="inline-block shrink-0">
+            <a href={homeHref} className="inline-block shrink-0 overflow-visible">
               <Image
-                src="/logo.svg"
+                src="/mg-group-logo.svg"
                 alt="MG Group"
-                width={110}
-                height={49}
-                className="h-9 w-auto"
+                width={1920}
+                height={1080}
+                className="h-14 w-auto max-h-14 origin-left scale-110 object-contain object-left sm:h-16 sm:max-h-16"
               />
             </a>
 
-            <p className="mt-4 max-w-md text-sm leading-6 text-slate-600">
+            <p className="mt-4 max-w-md text-sm leading-6 text-white/70">
               {ui.footer.description}
             </p>
 
-            <div className="mt-5 text-sm text-slate-600">
+            <div className="mt-5 text-sm text-white/70">
               <div>
                 {ui.footer.phone}:{" "}
-                <a className="text-slate-900 hover:text-[#FF5A2B]" href="tel:+34865450175">
+                <a className="text-white hover:text-mg-gold" href="tel:+34865450175">
                   +34 865 450 175
                 </a>
               </div>
               <div className="mt-1">
                 {ui.footer.email}:{" "}
-                <a className="text-slate-900 hover:text-[#FF5A2B]" href="mailto:info@mggroup.es">
+                <a className="text-white hover:text-mg-gold" href="mailto:info@mggroup.es">
                   info@mggroup.es
                 </a>
               </div>
@@ -78,13 +78,13 @@ export function Footer({ lang = "ru", footerLinks = [] }) {
           </div>
 
           <div className="md:col-span-4">
-            <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <div className="text-xs font-semibold uppercase tracking-wider text-mg-sage">
               {ui.footer.navigation}
             </div>
             <ul className="mt-4 grid grid-cols-1 gap-2">
               {links.map((l) => (
                 <li key={l.href}>
-                  <a className="text-sm text-slate-600 hover:text-slate-900" href={l.href}>
+                  <a className="text-sm text-white/75 hover:text-mg-gold" href={l.href}>
                     {l.label}
                   </a>
                 </li>
@@ -93,27 +93,27 @@ export function Footer({ lang = "ru", footerLinks = [] }) {
           </div>
 
           <div className="md:col-span-3">
-            <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <div className="text-xs font-semibold uppercase tracking-wider text-mg-sage">
               {ui.footer.feedback}
             </div>
-            <p className="mt-4 text-sm leading-6 text-slate-600">
+            <p className="mt-4 text-sm leading-6 text-white/70">
               {ui.footer.feedbackText}
             </p>
             <a
               href={contactsHref}
-              className="mt-4 inline-flex items-center justify-center rounded-full bg-[#ff6a3d] px-5 py-2 text-sm font-semibold text-white hover:bg-[#ff5a2b]"
+              className="mt-4 inline-flex items-center justify-center rounded-full bg-mg-gold px-5 py-2 text-sm font-semibold text-mg-ink transition-colors hover:bg-mg-gold-hover"
             >
               {ui.footer.goToContacts}
             </a>
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col gap-2 border-t border-black/10 pt-6 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-10 flex flex-col gap-2 border-t border-white/10 pt-6 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between">
           <div>
             © {new Date().getFullYear()} MG Group (Marescol S.L). {ui.footer.rights}
           </div>
           <div className="flex gap-4">
-            <a className="hover:text-slate-900" href={privacyHref}>
+            <a className="hover:text-mg-gold" href={privacyHref}>
               {ui.footer.privacy}
             </a>
           </div>
@@ -122,4 +122,3 @@ export function Footer({ lang = "ru", footerLinks = [] }) {
     </footer>
   );
 }
-

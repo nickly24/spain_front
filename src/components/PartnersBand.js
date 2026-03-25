@@ -7,7 +7,7 @@ export function PartnersBand({ partners, lang = "ru" }) {
   const ui = getUi(lang);
 
   return (
-    <section className="border-t border-black/10 bg-[#e8f4e8]">
+    <section className="border-t border-black/10 bg-mg-mint">
       <Container className="py-10">
         <div className="mb-5 text-center">
           <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">

@@ -103,7 +103,7 @@ export function BeforeAfterGallery({ cases, lang = "ru" }) {
           </div>
 
           <div className="relative overflow-hidden rounded-3xl border border-black/10 bg-slate-50">
-            <div className="absolute left-4 top-4 z-10 rounded-full bg-[#ff6a3d] px-3 py-1 text-xs font-semibold text-white">
+            <div className="absolute left-4 top-4 z-10 rounded-full bg-mg-teal px-3 py-1 text-xs font-semibold text-white">
               {t.after}
             </div>
             <div className="relative aspect-16/10">
@@ -166,7 +166,7 @@ export function BeforeAfterGallery({ cases, lang = "ru" }) {
                 type="button"
                 onClick={() => setIdx(i)}
                 className={`h-2.5 w-2.5 rounded-full transition ${
-                  i === idx ? "bg-[#ff6a3d]" : "bg-slate-300 hover:bg-slate-400"
+                  i === idx ? "bg-mg-teal" : "bg-slate-300 hover:bg-slate-400"
                 }`}
                 aria-label={t.openExample(i + 1)}
               />

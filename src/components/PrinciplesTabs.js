@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 
-const BRAND = "#ff6a3d";
+const BRAND = "#086b5e";
 
 export function PrinciplesTabs() {
   const items = useMemo(

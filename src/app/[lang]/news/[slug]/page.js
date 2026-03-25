@@ -65,7 +65,7 @@ export default async function NewsPostPage({ params }) {
         imageSrc={hero?.imageUrl || "/photos/image copy 6.png"}
       />
 
-      <section className="bg-[#e8f4e8]">
+      <section className="bg-mg-mint">
         <Container className="py-12">
           <article className="max-w-3xl">
             <div className="space-y-4 text-sm leading-7 text-slate-700 sm:text-base">

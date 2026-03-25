@@ -170,13 +170,13 @@ export default async function PropertyPage({ params }) {
         imageSrc={propertyWithLocale.images?.[0]?.url || "/photos/poster.jpg"}
       />
 
-      <section className="bg-[#e8f4e8]">
+      <section className="bg-mg-mint">
         <Container className="py-12">
           <div className="rounded-3xl border border-black/10 bg-white shadow-sm">
-            <div className="group -mt-px rounded-t-3xl border-b border-black/10 px-6 py-4 transition-colors duration-200 hover:bg-[#ff6a3d]/10">
+            <div className="group -mt-px rounded-t-3xl border-b border-black/10 px-6 py-4 transition-colors duration-200 hover:bg-mg-gold/10">
               <a
                 href={catalogPath}
-                className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-slate-700 transition-colors duration-200 hover:bg-[#ff6a3d] hover:text-white"
+                className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-slate-700 transition-colors duration-200 hover:bg-mg-teal hover:text-white"
               >
                 {backLabel}
               </a>
@@ -190,7 +190,7 @@ export default async function PropertyPage({ params }) {
                 </div>
                 <div className="text-right">
                   <div className="text-xs text-slate-500">{isSale ? priceLabel : rentLabel}</div>
-                  <div className="mt-1 text-lg font-semibold text-[#ff6a3d]">{price}</div>
+                  <div className="mt-1 text-lg font-semibold text-mg-gold">{price}</div>
                 </div>
               </div>
 
@@ -201,7 +201,7 @@ export default async function PropertyPage({ params }) {
                   {(propertyWithLocale.badgesLocalized || propertyWithLocale.badges).map((b) => (
                     <span
                       key={b}
-                      className="rounded-full border border-[#7DC931]/40 bg-[#7DC931]/10 px-4 py-2 text-sm font-medium text-[#5a9a24]"
+                      className="rounded-full border border-mg-teal/40 bg-mg-teal/10 px-4 py-2 text-sm font-medium text-mg-emerald"
                     >
                       {b}
                     </span>
@@ -295,7 +295,7 @@ export default async function PropertyPage({ params }) {
                 </a>
                 <a
                   href={`${base}/contacts`}
-                  className="inline-flex items-center justify-center rounded-2xl bg-[#ff6a3d] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#ff5a2b]"
+                  className="inline-flex items-center justify-center rounded-2xl bg-mg-gold px-6 py-3 text-sm font-semibold text-mg-ink transition-colors hover:bg-mg-gold-hover"
                 >
                   {requestLabel}
                 </a>

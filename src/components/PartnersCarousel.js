@@ -173,8 +173,8 @@ export function PartnersCarousel({ partners }) {
 
       {/* Desktop: infinite conveyor belt with ring-like depth at edges */}
       <div className="relative hidden h-[120px] w-full overflow-hidden md:block">
-        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-36 bg-linear-to-r from-[#e8f4e8] via-[#e8f4e8]/70 to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-36 bg-linear-to-l from-[#e8f4e8] via-[#e8f4e8]/70 to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-36 bg-linear-to-r from-mg-mint via-mg-mint/70 to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-36 bg-linear-to-l from-mg-mint via-mg-mint/70 to-transparent" />
 
         <div className="flex h-full items-center">
           <div ref={stripRef} className="flex items-center will-change-transform">

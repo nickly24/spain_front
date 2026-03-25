@@ -1,37 +1,50 @@
 @import "tailwindcss";
 
+/* MG GROUP — палитра из брендбука */
 :root {
   --radius: 16px;
 
-  --background: 120 30% 94%;
-  --foreground: 222 47% 11%;
+  /* Поверхности */
+  --mg-ink: #051f20;
+  --mg-forest: #0b2b26;
+  --mg-emerald: #163832;
+  --mg-sea: #235347;
+  --mg-teal: #086b5e;
+  --mg-sage: #8eb69b;
+  --mg-mint: #e8f0ec;
+  --mg-gold: #c9a962;
+  --mg-gold-hover: #b8964e;
+
+  /* shadcn (HSL) — светлая тема сайта */
+  --background: 136 18% 94%;
+  --foreground: 168 35% 12%;
 
   --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
+  --card-foreground: 168 35% 12%;
   --popover: 0 0% 100%;
-  --popover-foreground: 222 47% 11%;
+  --popover-foreground: 168 35% 12%;
 
-  --primary: 154 70% 35%;
+  --primary: 168 78% 26%;
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 210 40% 96%;
-  --secondary-foreground: 222 47% 11%;
+  --secondary: 136 14% 92%;
+  --secondary-foreground: 168 35% 12%;
 
-  --muted: 210 40% 96%;
-  --muted-foreground: 215 16% 47%;
+  --muted: 136 14% 92%;
+  --muted-foreground: 168 12% 40%;
 
-  --accent: 144 35% 92%;
-  --accent-foreground: 222 47% 11%;
+  --accent: 136 22% 88%;
+  --accent-foreground: 168 35% 12%;
 
   --destructive: 0 72% 51%;
   --destructive-foreground: 0 0% 100%;
 
-  --border: 214 32% 91%;
-  --input: 214 32% 91%;
-  --ring: 154 70% 35%;
+  --border: 136 12% 85%;
+  --input: 136 12% 85%;
+  --ring: 168 78% 26%;
 }
 
-/* Отдельная тема для админки (CMS): нейтральная, контрастная, «профессиональная». */
+/* Отдельная тема для админки (CMS) */
 .admin-theme {
   --radius: 14px;
 
@@ -43,8 +56,7 @@
   --popover: 0 0% 100%;
   --popover-foreground: 222 47% 11%;
 
-  /* Брендовый зелёный как акцент, но не «кислотный». */
-  --primary: 154 72% 33%;
+  --primary: 168 78% 26%;
   --primary-foreground: 0 0% 100%;
 
   --secondary: 210 40% 96%;
@@ -53,7 +65,7 @@
   --muted: 210 40% 96%;
   --muted-foreground: 215 16% 47%;
 
-  --accent: 154 55% 94%;
+  --accent: 136 25% 94%;
   --accent-foreground: 222 47% 11%;
 
   --destructive: 0 72% 51%;
@@ -61,10 +73,20 @@
 
   --border: 214 32% 90%;
   --input: 214 32% 90%;
-  --ring: 154 72% 33%;
+  --ring: 168 78% 26%;
 }
 
 @theme inline {
+  --color-mg-ink: #051f20;
+  --color-mg-forest: #0b2b26;
+  --color-mg-emerald: #163832;
+  --color-mg-sea: #235347;
+  --color-mg-teal: #086b5e;
+  --color-mg-sage: #8eb69b;
+  --color-mg-mint: #e8f0ec;
+  --color-mg-gold: #c9a962;
+  --color-mg-gold-hover: #b8964e;
+
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
   --color-card: hsl(var(--card));
@@ -84,21 +106,28 @@
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    /* В проекте по умолчанию остаёмся в light. Dark можно добавить переключателем позже. */
-    --background: 120 30% 94%;
-    --foreground: 222 47% 11%;
+    --background: 136 18% 94%;
+    --foreground: 168 35% 12%;
   }
 }
 
 body {
   background: hsl(var(--background));
   color: hsl(var(--foreground));
-  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system,
-    Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  font-family: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Шрифт с body (next/font): цепочка var(--font-display) из @theme ломалась на :root */
+h1,
+h2,
+h3 {
+  font-family: var(--font-display-serif), "Cormorant Garamond", Georgia, serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
 }

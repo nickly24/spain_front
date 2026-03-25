@@ -119,12 +119,12 @@ export default async function Home({ params }) {
     <div>
       <HeroSlideshow content={contentObject} />
 
-      <section className="bg-[#e8f4e8]">
+      <section className="bg-mg-mint">
         <Container className="py-14">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             <a
               href={`${base}/sale`}
-              className="group block rounded-3xl border border-black/10 bg-white p-6 shadow-sm transition-all duration-300 ease-out hover:scale-[1.03] hover:border-[#7DC931]/30 hover:bg-[#7DC931] hover:shadow-lg"
+              className="group block rounded-3xl border border-black/10 bg-white p-6 shadow-sm transition-all duration-300 ease-out hover:scale-[1.03] hover:border-mg-teal/30 hover:bg-mg-teal hover:shadow-lg"
             >
               <div className="text-sm font-semibold text-slate-900 transition-colors duration-300 group-hover:text-white">
                 {quickSaleTitle}
@@ -132,14 +132,14 @@ export default async function Home({ params }) {
               <div className="mt-2 text-sm leading-6 text-slate-600 transition-colors duration-300 group-hover:text-white/90">
                 {quickSaleText}
               </div>
-              <span className="mt-4 inline-flex rounded-full px-4 py-2 text-sm font-semibold text-[#ff6a3d] transition-colors duration-300 group-hover:bg-white group-hover:text-[#7DC931]">
+              <span className="mt-4 inline-flex rounded-full px-4 py-2 text-sm font-semibold text-mg-gold transition-colors duration-300 group-hover:bg-white group-hover:text-mg-teal">
                 {quickSaleCta}
               </span>
             </a>
 
             <a
               href={`${base}/rent`}
-              className="group block rounded-3xl border border-black/10 bg-white p-6 shadow-sm transition-all duration-300 ease-out hover:scale-[1.03] hover:border-[#7DC931]/30 hover:bg-[#7DC931] hover:shadow-lg"
+              className="group block rounded-3xl border border-black/10 bg-white p-6 shadow-sm transition-all duration-300 ease-out hover:scale-[1.03] hover:border-mg-teal/30 hover:bg-mg-teal hover:shadow-lg"
             >
               <div className="text-sm font-semibold text-slate-900 transition-colors duration-300 group-hover:text-white">
                 {quickRentTitle}
@@ -147,14 +147,14 @@ export default async function Home({ params }) {
               <div className="mt-2 text-sm leading-6 text-slate-600 transition-colors duration-300 group-hover:text-white/90">
                 {quickRentText}
               </div>
-              <span className="mt-4 inline-flex rounded-full px-4 py-2 text-sm font-semibold text-[#ff6a3d] transition-colors duration-300 group-hover:bg-white group-hover:text-[#7DC931]">
+              <span className="mt-4 inline-flex rounded-full px-4 py-2 text-sm font-semibold text-mg-gold transition-colors duration-300 group-hover:bg-white group-hover:text-mg-teal">
                 {quickRentCta}
               </span>
             </a>
 
             <a
               href={`${base}/construction`}
-              className="group block rounded-3xl border border-black/10 bg-white p-6 shadow-sm transition-all duration-300 ease-out hover:scale-[1.03] hover:border-[#7DC931]/30 hover:bg-[#7DC931] hover:shadow-lg"
+              className="group block rounded-3xl border border-black/10 bg-white p-6 shadow-sm transition-all duration-300 ease-out hover:scale-[1.03] hover:border-mg-teal/30 hover:bg-mg-teal hover:shadow-lg"
             >
               <div className="text-sm font-semibold text-slate-900 transition-colors duration-300 group-hover:text-white">
                 {quickConstructionTitle}
@@ -162,7 +162,7 @@ export default async function Home({ params }) {
               <div className="mt-2 text-sm leading-6 text-slate-600 transition-colors duration-300 group-hover:text-white/90">
                 {quickConstructionText}
               </div>
-              <span className="mt-4 inline-flex rounded-full px-4 py-2 text-sm font-semibold text-[#ff6a3d] transition-colors duration-300 group-hover:bg-white group-hover:text-[#7DC931]">
+              <span className="mt-4 inline-flex rounded-full px-4 py-2 text-sm font-semibold text-mg-gold transition-colors duration-300 group-hover:bg-white group-hover:text-mg-teal">
                 {quickConstructionCta}
               </span>
             </a>
@@ -170,7 +170,7 @@ export default async function Home({ params }) {
         </Container>
       </section>
 
-      <section className="bg-[#e8f4e8]">
+      <section className="bg-mg-mint">
         <Container className="py-14">
           <div className="flex items-end justify-between gap-6">
             <div>
@@ -186,7 +186,7 @@ export default async function Home({ params }) {
             </div>
             <a
               href={`${base}/sale`}
-              className="hidden sm:inline-flex items-center justify-center rounded-full bg-[#ff6a3d] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#ff5a2b]"
+              className="hidden sm:inline-flex items-center justify-center rounded-full bg-mg-gold px-5 py-2.5 text-sm font-semibold text-mg-ink hover:bg-mg-gold-hover"
             >
               {hotCta}
             </a>
@@ -201,7 +201,7 @@ export default async function Home({ params }) {
           <div className="mt-8 sm:hidden">
             <a
               href={`${base}/sale`}
-              className="inline-flex w-full items-center justify-center rounded-full bg-[#ff6a3d] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#ff5a2b]"
+              className="inline-flex w-full items-center justify-center rounded-full bg-mg-gold px-5 py-2.5 text-sm font-semibold text-mg-ink hover:bg-mg-gold-hover"
             >
               {hotCta}
             </a>

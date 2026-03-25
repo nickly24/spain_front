@@ -140,7 +140,7 @@ export default async function ConstructionPage({ params }) {
         imageSrc="/photos/image copy 4.png"
       />
 
-      <section className="bg-[#e8f4e8]">
+      <section className="bg-mg-mint">
         <Container className="py-12">
           <div className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
             <div className="flex items-end justify-between gap-6">
@@ -161,7 +161,7 @@ export default async function ConstructionPage({ params }) {
               <div className="pointer-events-none absolute left-5 top-6 bottom-6 w-px bg-slate-200" />
               {steps.map((s) => (
                 <div key={s.n} className="relative pl-14">
-                  <div className="absolute left-0 top-5 grid size-10 place-items-center rounded-2xl bg-[#ff6a3d] text-sm font-semibold text-white shadow-sm">
+                  <div className="absolute left-0 top-5 grid size-10 place-items-center rounded-2xl bg-mg-teal text-sm font-semibold text-white shadow-sm">
                     {s.n}
                   </div>
                   <div className="rounded-2xl border border-black/10 bg-white p-5">
@@ -196,7 +196,7 @@ export default async function ConstructionPage({ params }) {
                   className="group inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-2 text-sm text-slate-700 shadow-sm"
                   title={s.text}
                 >
-                  <span className="inline-block size-2 rounded-full bg-[#ff6a3d]" />
+                  <span className="inline-block size-2 rounded-full bg-mg-teal" />
                   <span className="font-semibold text-slate-900">{s.title}</span>
                   <span className="hidden sm:inline text-slate-500">— {s.text}</span>
                 </div>
@@ -204,7 +204,7 @@ export default async function ConstructionPage({ params }) {
             </div>
           </div>
 
-          <div className="mt-8 rounded-3xl border border-black/10 bg-[#ff6a3d] p-6 text-white shadow-sm">
+          <div className="mt-8 rounded-3xl border border-black/10 bg-mg-teal p-6 text-white shadow-sm">
             <div className="text-sm font-semibold">{contentMap.get("construction.cta.title") || t.ctaTitle}</div>
             <p className="mt-2 text-sm leading-6 text-white/85">
               {contentMap.get("construction.cta.text") || t.ctaText}

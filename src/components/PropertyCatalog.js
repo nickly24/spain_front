@@ -112,7 +112,7 @@ export function PropertyCatalog({ properties, mode, basePath = "", lang = "ru" }
                     setCityKey(e.target.value);
                     setPage(1);
                   }}
-                  className="w-full appearance-none rounded-xl border border-slate-200 bg-white px-3 py-2 pr-8 text-sm text-slate-900 outline-none focus:border-[#ff6a3d]"
+                  className="w-full appearance-none rounded-xl border border-slate-200 bg-white px-3 py-2 pr-8 text-sm text-slate-900 outline-none focus:border-mg-teal"
                 >
                   <option value="">{ui.catalog.allCities}</option>
                   {cities.map((c) => (
@@ -145,7 +145,7 @@ export function PropertyCatalog({ properties, mode, basePath = "", lang = "ru" }
                     setBedrooms(e.target.value);
                     setPage(1);
                   }}
-                  className="w-full appearance-none rounded-xl border border-slate-200 bg-white px-3 py-2 pr-8 text-sm text-slate-900 outline-none focus:border-[#ff6a3d]"
+                  className="w-full appearance-none rounded-xl border border-slate-200 bg-white px-3 py-2 pr-8 text-sm text-slate-900 outline-none focus:border-mg-teal"
                 >
                   <option value="">{ui.catalog.any}</option>
                   <option value="0">{ui.catalog.studio}</option>
@@ -195,7 +195,7 @@ export function PropertyCatalog({ properties, mode, basePath = "", lang = "ru" }
                       );
                       setPage(1);
                     }}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 pr-8 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-[#ff6a3d]"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 pr-8 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-mg-teal"
                     placeholder={ui.catalog.from}
                   />
                   <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-500">
@@ -223,7 +223,7 @@ export function PropertyCatalog({ properties, mode, basePath = "", lang = "ru" }
                       );
                       setPage(1);
                     }}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 pr-8 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-[#ff6a3d]"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 pr-8 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-mg-teal"
                     placeholder={ui.catalog.to}
                   />
                   <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-500">
@@ -252,7 +252,7 @@ export function PropertyCatalog({ properties, mode, basePath = "", lang = "ru" }
       <div className="flex flex-wrap items-center justify-between gap-3">
         <span className="text-sm text-slate-600">
           {ui.catalog.found}{" "}
-          <span className="font-semibold text-[#ff6a3d]">{filtered.length}</span>
+          <span className="font-semibold text-mg-gold">{filtered.length}</span>
         </span>
         {totalPages > 1 && (
           <span className="text-sm text-slate-600">
@@ -279,7 +279,7 @@ export function PropertyCatalog({ properties, mode, basePath = "", lang = "ru" }
               onClick={() => setPage(n)}
               className={`min-w-9 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
                 n === currentPage
-                  ? "bg-[#ff6a3d] text-white"
+                  ? "bg-mg-gold text-mg-ink"
                   : "bg-white text-slate-700 border border-black/10 hover:bg-black/3"
               }`}
             >

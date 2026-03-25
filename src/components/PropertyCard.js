@@ -75,7 +75,7 @@ export function PropertyCard({ property, basePath = "", lang = "ru" }) {
       </div>
 
       <div className="p-5">
-        <div className="text-sm font-semibold text-[#ff6a3d]">{price}</div>
+        <div className="text-sm font-semibold text-mg-gold">{price}</div>
 
         {(property.badgesLocalized || property.badges)?.length ? (
           <div className="mt-2.5 flex flex-wrap gap-1.5">
@@ -118,7 +118,7 @@ export function PropertyCard({ property, basePath = "", lang = "ru" }) {
           </div>
 
           <div className="flex justify-end">
-            <span className="inline-flex items-center justify-center rounded-full bg-[#ff6a3d] px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm transition-colors group-hover:bg-[#ff5a2b]">
+            <span className="inline-flex items-center justify-center rounded-full bg-mg-gold px-3 py-1.5 text-[11px] font-semibold text-mg-ink shadow-sm transition-colors group-hover:bg-mg-gold-hover">
               {ui.property.moreDetails}
             </span>
           </div>
