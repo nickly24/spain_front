@@ -351,18 +351,18 @@ function HeaderInner({ pathname, lang = "ru", headerLinks = [], topbarLinks = []
       </div>
 
       {/* Main bar */}
-      <Container className="py-3">
+      <Container className="py-2.5 sm:py-3">
         <div className="flex items-center justify-between gap-4">
           <a
             href={homeHref}
-            className="flex h-14 shrink-0 items-center overflow-visible pr-2 pl-0 max-sm:h-12 max-sm:-ml-1 md:-ml-6 lg:-ml-10 xl:-ml-12"
+            className="flex shrink-0 items-center rounded-lg px-2.5 py-2 sm:px-3 sm:py-2.5"
           >
             <Image
               src="/mg-group-logo.svg"
               alt="MG Group"
-              width={1920}
-              height={1080}
-              className="block h-14 w-auto max-h-14 origin-left scale-[2.35] object-contain object-left max-sm:h-11 max-sm:max-h-11 max-sm:scale-[1.7]"
+              width={320}
+              height={120}
+              className="h-9 w-auto max-h-9 object-contain object-left sm:h-10 sm:max-h-10"
               priority
             />
           </a>
